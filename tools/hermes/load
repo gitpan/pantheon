@@ -1,0 +1,51 @@
+#!/usr/bin/perl -w
+
+=head1 SYNOPSIS
+
+Load YAML data into hermes databases.
+
+ $0 [input-file] [--quiet]
+
+=cut
+use strict;
+use YAML::XS;
+
+use Hermes;
+use Hermes::DBI::Root;
+use Vulcan::OptConf;
+
+$| ++;
+$/ = undef;
+
+$Vulcan::OptConf::THIS = 'hermes';
+
+my %o = Vulcan::OptConf->load()->get( qw( quiet ) )->dump();
+my $range = Hermes->new();
+
+for my $input ( YAML::XS::Load( <> ) )
+{
+    my $error = "not HASH\n";
+
+    die $error if ref $input ne 'HASH';
+    map { die "$_: $error" if ref $input->{$_} ne 'HASH' } keys %$input;
+
+    while ( my ( $cluster, $input ) = each %$input )
+    {
+        my $db = Hermes::DBI::Root
+            ->new( File::Spec->join( $o{root}, $cluster ) );
+
+        while ( my ( $table, $input ) = each %$input )
+        {
+            warn "$cluster: $table\n" unless $o{quiet};
+            $db->create( $table );
+
+            while ( my ( $key, $val ) = each %$input )
+            {
+                map { $db->insert( $table, $_, $val ) }
+                    $range->load( $key )->list();
+            }
+        }
+    }
+}
+
+exit 0;

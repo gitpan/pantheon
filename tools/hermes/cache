@@ -1,0 +1,19 @@
+#!/usr/bin/perl -w
+
+=head1 SYNOPSIS
+
+Covert hermes databases to hermes cache
+
+=cut
+use strict;
+
+use Hermes::Cache;
+use Vulcan::OptConf;
+
+$| ++;
+
+$Vulcan::OptConf::THIS = 'hermes';
+
+Hermes::Cache->new( Vulcan::OptConf->load()->dump() )->make;
+
+exit 0;

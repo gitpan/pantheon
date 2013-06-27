@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+
+=head1 SYNOPSIS
+
+Dump hermes databases to YAML
+
+ $0 [output-file] [--compress] [--list] [--cluster cluster-range]
+
+=cut
+use strict;
+use YAML::XS;
+
+use Hermes;
+use Hermes::DBI::Root;
+use Vulcan::OptConf;
+
+$| ++;
+
+$Vulcan::OptConf::THIS = 'hermes';
+
+my $option = Vulcan::OptConf->load();
+my %o = $option->get( qw( list compress cluster=s ) )->dump();
+my $range = Hermes->new( $option->dump( 'range' ) );
+my ( $root, @data, %data, @empty ) = delete $o{root};
+
+die "cannot chdir $root" unless chdir $root;
+
+for my $cluster ( $o{cluster} ? $range->load( $o{cluster} )->list : glob '*' )
+{
+    my $db = File::Spec->join( $root, $cluster );
+    my %datum;
+
+    $db = -f $db ? Hermes::DBI::Root->new( $db ) : next;
+
+    for my $table ( $db->table() )
+    {
+        my ( @record, %record ) = $db->dump( $table );
+
+        if ( $o{compress} )
+        {
+            map { push @{ $record{ $_->[1] } },  $_->[0] } @record;
+
+            for my $val ( keys %record )
+            {
+                my $key = $range->load( $record{$val} )->dump;
+                $datum{$cluster}{$table}{$key} = $val;
+            }
+        }
+        else
+        {
+            map { $datum{$cluster}{$table}{ $_->[0] } = $_->[1] } @record;
+        }
+    }
+
+    unless ( %datum ) { push @empty, $cluster }
+    elsif ( $o{list} ) { push @data, \%datum }
+    else { $data{$cluster} = $datum{$cluster} }
+}
+
+YAML::XS::DumpFile( shift || \*STDOUT, $o{list} ? @data : \%data );
+
+warn sprintf "\nEmpty clusters ( possibly cruft ):\n\n%s\n\n",
+    $range->load( \@empty )->dump() if @empty;
+
+exit 0;

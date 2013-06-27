@@ -1,0 +1,133 @@
+package Vulcan::SysInfo;
+
+=head1 NAME
+
+Vulcan::SysInfo - Get various system statistics through sar, df, etc.
+
+=head1 SYNOPSIS
+ 
+ use Vulcan::SysInfo;
+
+ my $sar = Vulcan::SysInfo->new( interval => 6 );
+
+ my %info = $sar->info;
+ my $stable = $sar->eval( 'MISC{data}{uptime} > 86400 * 1000' );
+
+=cut
+use strict;
+use warnings;
+use Carp;
+
+use constant { KEY => 'MISC', VAL => 'data', INTERVAL => 6 };
+
+our $REGEX = qr/\{ (\w+) \}\{ ([^{}]+) \}\{ ([^{}]+) \}/x;
+
+sub new
+{
+    my ( $class, %self ) = splice @_;
+    my @stat =
+    (
+        [
+            [ qw( time uptime idle ) ],
+            [ time, split /\s+/, `cat /proc/uptime` ],
+        ]
+    );
+
+    $self{interval} ||= INTERVAL;
+    confess "open: $!" unless open my $cmd, "sar -A $self{interval} 1 |";
+
+    my ( $flip, $flop, @data, %legend );
+
+    while ( my $line = <$cmd> ) ## sar
+    {
+        $flip = $line =~ s/^Average:\s+//;
+        $flop = $flip if $flip;
+        next unless $flop;
+
+        if ( length $line > 1 ) { push @data, [ split /\s+/, $line ] }
+        else { $flop = $flip; push @stat, [ splice @data ] }
+    }
+
+    push @stat, [ splice @data ] if @data;
+
+    for ( '-l', '-i' ) ## df: size and inode
+    {
+        for ( map { [ ( split /\s+/, $_, 7 )[ 5, 1..4 ] ] } `df $_` )
+        {
+            map { $_ = $1 / 100 if $_ =~ /(\d+)%/ } @$_;
+            push @data, $_;
+        }
+
+        $data[0][0] = 'DF';
+        push @stat, [ splice @data ];
+    }
+
+    for my $stat ( @stat )
+    {
+        my $legend = shift @$stat;
+        map { $_ =~ s/^%/pct_/; $_ =~ s/%$/_pct/ } @$legend;
+
+        if ( $legend->[0] !~ /^[A-Z]+$/ )
+        {
+             unshift @$legend, KEY;
+             unshift @{ $stat->[0] }, VAL;
+        }
+
+        my $type = shift @$legend;
+        push @{ $legend{$type} }, @$legend;
+        map { push @{ $self{metric}{$type}{ shift @$_ } }, @$_ } @$stat;
+    }
+
+    for my $type ( keys %legend )
+    {
+        my $i = 0;
+        map { $self{legend}{$type}{$_} = $i ++ } @{ delete $legend{$type} };
+    }
+
+    bless \%self, ref $class || $class;
+}
+
+=head1 METHODS
+
+=head3 info
+
+Returns I<record> and I<legend> indexed by I<type>.
+
+=cut
+sub info
+{
+    my ( $self, %info ) = shift;
+    my ( $legend, $metric ) = @$self{ qw( legend metric ) };
+
+    for my $type ( keys %$legend )
+    {
+        $info{$type}{legend} = [ sort keys %{ $legend->{$type} } ];
+        $info{$type}{record} = [ sort keys %{ $metric->{$type} } ];
+    }
+
+    return wantarray ? %info : \%info;
+}
+
+=head3 eval( $test )
+
+Evaluate a test, Returns $test when true, undef otherwise.
+
+=cut
+sub eval
+{
+    my ( $self, $test ) = splice @_;
+    my ( $legend, $metric ) = @$self{ qw( legend metric ) };
+
+    while ( $test =~ /$REGEX/g )
+    {
+        return $test unless my $value = $metric->{$1}{$2};
+        return $test unless my $index = $legend->{$1}{$3};
+        return $test unless defined ( $value = $value->[$index] );
+
+        $test =~ s/$REGEX/$value/;
+    }
+    
+    return eval $test ? $test : undef;
+}
+
+1;

@@ -1,0 +1,27 @@
+---
+abstract: 'A suite of cluster administration platforms'
+author:
+  - 'Kan Liu <kan@cpan.org>'
+build_requires:
+  ExtUtils::MakeMaker: 0
+configure_requires:
+  ExtUtils::MakeMaker: 0
+dynamic_config: 1
+generated_by: 'ExtUtils::MakeMaker version 6.68, CPAN::Meta::Converter version 2.112621'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: pantheon
+no_index:
+  directory:
+    - t
+    - inc
+requires:
+  DBD::SQLite: 1.37
+  DBI: 1.625
+  Test::More: 0
+  Thread::Queue: 2.12
+  YAML::XS: 0.41
+  threads: 1.8
+version: 0.01
