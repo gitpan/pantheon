@@ -8,7 +8,7 @@ $| ++;
 
 my $module = basename( $Bin );
 my $list = join "\n",
-my ( $HIST, $MAKE, $LIST ) = qw( Changes MakeFile.PL MANIFEST );
+my ( $HIST, $MAKE, $LIST ) = qw( Changes Makefile.PL MANIFEST );
 
 die $! unless chdir $Bin && open my $handle, '>', $LIST; ## create manifest
 

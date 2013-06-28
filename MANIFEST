@@ -1,6 +1,6 @@
 README
 Changes
-MakeFile.PL
+Makefile.PL
 MANIFEST
 update
 lib/MIO/CMD.pm

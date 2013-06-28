@@ -10,7 +10,7 @@ use base qw( Vulcan::DirConf );
 
 =head1 CONFIGURATION
 
-A YAML file that defines I<code>, I<conf>, I<data>, I<run> paths.
+A YAML file that defines I<code>, I<conf>, I<run> paths.
 Each must be a valid directory or symbolic link.
 
 =cut
