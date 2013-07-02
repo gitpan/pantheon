@@ -37,7 +37,7 @@ I<optional>, default to ( ):
 
  user: ( nobody ) setuidgid user.
  nice: ( 19 ) nice -n value.
- ionice: ( 3 ) ionice -p value.
+ ionice: ( 3 ) ionice -c value.
  wait: ( 20 ) sleep a few seconds after a failed launch.
 
  size: ( 10000 ) multilog S value
@@ -96,14 +96,14 @@ sub run
     my $user = delete $conf->{user};
 
     $self->script( $path, sprintf 
-        "exec setuidgid $user nice -n %d ionice -p %s %s 2>&1 || sleep %d",
-            @$conf{ qw( nice ionice command wait ) } );
+        "exec setuidgid $user nice -n %d ionice -c %s %s 2>&1 || sleep %d",
+            @run{ qw( nice ionice command wait ) } );
 
     my $dir = './main';
 
     $self->script( $log, "mkdir -p $dir", "chown -R $user $dir",
         sprintf "exec setuidgid $user multilog t I s%d n%d $dir",
-            @$conf{ qw( size keep ) } );
+            @run{ qw( size keep ) } );
             
     if ( -l $link ) { warn "$name: already running\n" }
     elsif ( ! symlink $path, $link ) { confess "symlink: $!" }
@@ -118,7 +118,7 @@ sub kill
 {
     my $self = shift;
     my ( $link, $path ) = @$self{ qw( link path ) };
-    unlink $link && system( "svc -dx $path" );
+    system( "rm $link && svc -dx $path" );
 }
 
 =head3 path()

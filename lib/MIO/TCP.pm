@@ -71,9 +71,10 @@ sub new
 Make TCP connections in parallel.
 The following parameters may be defined in I<%param>:
 
- max: ( default 128 ) number of connections in parallel.
- log: ( default STDERR ) a handle to report progress.
- timeout: ( default 300 ) number of seconds allotted for each connection.
+ max : ( default 128 ) number of connections in parallel.
+ log : ( default STDERR ) a handle to report progress.
+ timeout : ( default 300 ) number of seconds allotted for each connection.
+ input : ( default from STDIN ) input buffer.
 
 Returns HASH of HASH of nodes. First level is indexed by type
 ( I<mesg> or I<error> ). Second level is indexed by message.
@@ -87,9 +88,10 @@ sub run
 
     my %run = ( %RUN, @_ );
     my ( %result, %buffer, %count );
-    my ( $log, $max, $timeout ) = @run{ qw( log max timeout ) };
-    my $input = -t STDIN ? '' : <STDIN>;
+    my ( $log, $max, $timeout, $input ) = @run{ qw( log max timeout input ) };
     my @node = keys %$self;
+
+    $input ||= -t STDIN ? '' : <STDIN>;
 
     for ( my $time = time; @node || $poll->handles; )
     {

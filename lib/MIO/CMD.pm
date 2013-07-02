@@ -53,9 +53,10 @@ sub new
 Run commands in parallel.
 The following parameters may be defined in I<%param>:
 
- max: ( default 32 ) number of commands in parallel.
- log: ( default STDERR ) a handle to report progress.
- timeout: ( default 300 ) number of seconds allotted for each command.
+ max : ( default 32 ) number of commands in parallel.
+ log : ( default STDERR ) a handle to report progress.
+ timeout : ( default 300 ) number of seconds allotted for each command.
+ input : ( default from STDIN ) input buffer.
 
 Returns HASH of HASH of nodes. First level is indexed by type
 ( I<stdout>, I<stderr>, or I<error> ). Second level is indexed by message.
@@ -70,9 +71,9 @@ sub run
     my %run = ( %RUN, @_ );
     my ( $log, $max, $timeout ) = @run{ qw( log max timeout ) };
     my ( %result, %buffer, %count );
-    my $input = -t STDIN ? '' : <STDIN>;
     my @node = keys %$self;
     my %node = map { $_ => {} } qw( stdout stderr );
+    my $input = defined $run{input} ? $run{input} : -t STDIN ? '' : <STDIN>;
 
     for ( my $time = time; @node || $poll->handles; )
     {
@@ -135,7 +136,7 @@ sub run
             my ( $io, $node ) = @{ delete $node{$fh} };
 
             push @{ $result{$io}{ delete $buffer{$fh} } }, $node
-                if length $buffer{$fh};
+                if defined $buffer{$fh} && length $buffer{$fh};
 
             unless ( -- $count{$node}[1] )
             {

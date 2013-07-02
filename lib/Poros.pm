@@ -25,7 +25,7 @@ $| ++;
 sub new 
 {
     my $class = shift;
-    bless Poros::Path->new( @_ )->make(), ref $class || $class;
+    bless { path => Poros::Path->new( @_ )->make() }, ref $class || $class;
 }
 
 =head1 METHODS
@@ -45,7 +45,7 @@ sub run
     my $query = Poros::Query->load( <> );
     warn $query->yaml();
 
-    YAML::XS::DumpFile \*STDOUT, $query->run( %{ $self->path() } );
+    YAML::XS::DumpFile \*STDOUT, $query->run( %{ $self->{path}->path() } );
 }
 
 1;

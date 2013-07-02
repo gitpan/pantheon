@@ -10,7 +10,7 @@ Hermes::DBI::Cache - DB interface to Hermes cache data
 
  my $db = Hermes::DBI::Cache->new( '/database/file' );
 
- $db->select( name => [ 1, 'foo' ] );
+ $db->select( 'node', name => [ 1, 'foo' ] );
 
 =cut
 use strict;

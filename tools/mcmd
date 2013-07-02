@@ -20,7 +20,7 @@ my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( range=s timeout=i max=i ) )->dump();
 
 my $range = Hermes->new( $option->dump( 'range' ) );
-my %cmd = map { $_ => \@ARGV } $range->load( delete $o{range} )->list;
+my %cmd = map { $_ => \@ARGV } $range->load( delete $o{range} )->list();
 
 my %result = MIO::CMD->new( %cmd )->run( %o );
 my %mesg;

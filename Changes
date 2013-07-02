@@ -1,5 +1,16 @@
 Revision history for pantheon.
 
+0.03    2013.07.01
+        Vulcan::RRLogDir - new module
+        Vulcan::Daemon - bugfix
+        MIO::TCP - input buffer
+        MIO::CMD - input buffer, minor bugfix
+        Poros - bugfix
+        tools/daemon - bugfix
+        tools/hermes/cache - new feature -d
+        tools/hermes/node - new tool
+        tools/poros/proxy - new tool
+        tools/poros/client - new tool
 
 0.02    2013.06.27
         Makefile.PL

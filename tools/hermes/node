@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+
+=head1 SYNOPSIS
+
+Modfiy hermes databases for nodes
+
+ $0 [--range nodes] [--value value] [--quiet]
+
+=cut
+use strict;
+use YAML::XS;
+
+use Hermes;
+use Hermes::DBI::Root;
+use Hermes::DBI::Cache;
+use Vulcan::OptConf;
+
+$| ++;
+
+$Vulcan::OptConf::THIS = 'hermes';
+
+use constant { OK => 0, DOWN => 1 };
+
+my $option = Vulcan::OptConf->load();
+my %o = $option->set( value => DOWN )
+    ->get( qw( range=s value=s cluster=s table=s quiet ) )->dump();
+
+my %range = $option->dump( 'range' );
+my $range = Hermes->new( %range );
+my $cache = Hermes::DBI::Cache->new( $range{cache} );
+my %db;
+
+my %table = map { $_ => 1 } $range->load( $o{table} || [] )->list();
+my %cluster = map { $_ => 1 } $range->load( $o{cluster} || [] )->list();
+
+for my $node ( $range->load( $o{range} )->list() )
+{
+    for my $record ( $cache->select( '*', node => [ 1 => $node ] ) )
+    {
+        my $cluster = shift @$record;
+
+        next if %cluster && ! $cluster{$cluster};
+        next if %table && ! $table{$record->[0]};
+
+        $db{$cluster}{handle} ||= Hermes::DBI::Root
+            ->new( File::Spec->join( $o{root}, $cluster ) );
+
+        $record->[-1] = $o{value};
+        push @{ $db{$cluster}{record} }, $record;
+    }
+}
+
+for my $cluster ( sort keys %db )
+{
+    my $db = $db{$cluster};
+    warn "$cluster:\n" unless $o{quiet};
+
+    for my $record ( @{ $db->{record} } )
+    {
+        warn sprintf "  %s\n", join( ': ', @$record ) unless $o{quiet};
+        $db->{handle}->insert( @$record );
+    }
+}
+
+exit 0;

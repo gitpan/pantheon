@@ -13,7 +13,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 MODULES
 
@@ -21,93 +21,94 @@ our $VERSION = '0.02';
 
 A monitoring platform
 
- Argos::Map.pm
- Argos::Reduce.pm
- Argos::Ctrl.pm
- Argos::Data.pm
- Argos::Path.pm
- Argos::Code.pm
- Argos::Conf.pm
- Argos::Conf::Map.pm
- Argos::Conf::Reduce.pm
- Argos::Code::Batch.pm
- Argos::Code::Map.pm
- Argos::Code::Reduce.pm
+ Argos::Map
+ Argos::Reduce
+ Argos::Ctrl
+ Argos::Data
+ Argos::Path
+ Argos::Code
+ Argos::Conf
+ Argos::Conf::Map
+ Argos::Conf::Reduce
+ Argos::Code::Batch
+ Argos::Code::Map
+ Argos::Code::Reduce
 
 =head3 Ceres
 
 A data collection platform
 
- Ceres::Sndr.pm
- Ceres::Rcvr.pm
- Ceres::DBI::Index.pm
+ Ceres::Sndr
+ Ceres::Rcvr
+ Ceres::DBI::Index
 
 =head3 Hermes
 
 A cluster information management platform
 
- Hermes.pm
- Hermes::Range.pm
- Hermes::KeySet.pm
- Hermes::Cache.pm
- Hermes::Call.pm
- Hermes::DBI::Cache.pm
- Hermes::DBI::Root.pm
+ Hermes
+ Hermes::Range
+ Hermes::KeySet
+ Hermes::Cache
+ Hermes::Call
+ Hermes::DBI::Cache
+ Hermes::DBI::Root
 
 =head3 Janus
 
 A maintenance platform
 
- Janus.pm
- Janus::Conf.pm
- Janus::Ctrl.pm
- Janus::Path.pm
- Janus::Log.pm
- Janus::Sequence.pm
- Janus::Sequence::Code.pm
- Janus::Sequence::Conf.pm
+ Janus
+ Janus::Conf
+ Janus::Ctrl
+ Janus::Path
+ Janus::Log
+ Janus::Sequence
+ Janus::Sequence::Code
+ Janus::Sequence::Conf
 
 =head3 MIO
 
 Multiplexed IO
 
- MIO::CMD.pm
- MIO::TCP.pm
+ MIO::CMD
+ MIO::TCP
 
 =head3 Pan
 
 A configuration management platform
 
- Pan::Conf.pm
- Pan::Macro.pm
- Pan::Node.pm
- Pan::Path.pm
- Pan::RCS.pm
- Pan::Repo.pm
- Pan::Transform.pm
- Pan::Util.pm
+ Pan::Conf
+ Pan::Macro
+ Pan::Node
+ Pan::Path
+ Pan::RCS
+ Pan::Repo
+ Pan::Transform
+ Pan::Util
 
 =head3 Poros
 
 A plugin execution platform
 
- Poros.pm
- Poros::Path.pm
- Poros::Query.pm
+ Poros
+ Poros::Path
+ Poros::Query
 
 =head3 Vulcan
 
 A suite of utility modules
 
- Vulcan::Daemon.pm
- Vulcan::DirConf.pm
- Vulcan::OptConf.pm
- Vulcan::Logger.pm
- Vulcan::Phasic.pm
- Vulcan::ProcLock.pm
- Vulcan::SQLiteDB.pm
- Vulcan::SysInfo.pm
- Vulcan::Symlink.pm
+ Vulcan::Daemon
+ Vulcan::DirConf
+ Vulcan::OptConf
+ Vulcan::Logger
+ Vulcan::Phasic
+ Vulcan::ProcLock
+ Vulcan::SQLiteDB
+ Vulcan::SysInfo
+ Vulcan::Symlink
+ Vulcan::RRLogDir
 
 =head1 AUTHOR
 

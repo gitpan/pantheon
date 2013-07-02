@@ -51,6 +51,7 @@ lib/Vulcan/Symlink.pm
 lib/Vulcan/Daemon.pm
 lib/Vulcan/SQLiteDB.pm
 lib/Vulcan/Logger.pm
+lib/Vulcan/RRLogDir.pm
 lib/Vulcan/DirConf.pm
 lib/Vulcan/Phasic.pm
 lib/Vulcan/OptConf.pm
@@ -70,9 +71,12 @@ tools/loop
 tools/.config
 tools/range
 tools/fping-r
+tools/poros/proxy
+tools/poros/client
 tools/hermes/dump
 tools/hermes/load
 tools/hermes/cache
+tools/hermes/node
 tools/argos/ctrl
 tools/argos/run
 tools/daemon

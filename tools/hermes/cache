@@ -14,6 +14,11 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
-Hermes::Cache->new( Vulcan::OptConf->load()->dump() )->make;
+my %o = Vulcan::OptConf->load()->get( qw( daemon interval=i ) )->dump();
+my ( $daemon, $interval ) = delete @o{ qw( daemon interval ) };
+
+$interval ||= 5;
+
+do { Hermes::Cache->new( %o )->make } while $daemon && sleep $interval;
 
 exit 0;
