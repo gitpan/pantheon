@@ -48,6 +48,7 @@ lib/Argos/Path.pm
 lib/Argos/Code.pm
 lib/Poros.pm
 lib/Vulcan/Symlink.pm
+lib/Vulcan/Mrsync.pm
 lib/Vulcan/Daemon.pm
 lib/Vulcan/SQLiteDB.pm
 lib/Vulcan/Logger.pm
@@ -73,6 +74,7 @@ tools/range
 tools/fping-r
 tools/poros/proxy
 tools/poros/client
+tools/mrsync
 tools/hermes/dump
 tools/hermes/load
 tools/hermes/cache

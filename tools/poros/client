@@ -1,7 +1,11 @@
 #!/usr/bin/perl -w
 
-use strict;
+=head1 SYNOPSIS
 
+ $0 -r range [--user username] [--timeout seconds] [--max number] cmd ..
+
+=cut
+use strict;
 use Hermes;
 use MIO::TCP;
 use Poros::Query;
@@ -15,9 +19,8 @@ $Vulcan::OptConf::ARGC = -1;
 
 my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( range=s user=s timeout=i max=i ) )->dump();
-my %query = ( code => shift, logname => operator() );
+my %query = ( code => shift, logname => operator(), argv => \@ARGV );
 
-$query{param} = \@ARGV if @ARGV;
 $query{user} = delete $o{user} if $o{user};
 
 my $range = Hermes->new( $option->dump( 'range' ) );
@@ -26,7 +29,6 @@ my %result = MIO::TCP
     ->run( %o, input => Poros::Query->dump( \%query ) );
 
 my %mesg;
-
 while ( my ( $type, $mesg ) = each %result )
 {
     while ( my ( $mesg, $node ) = each %$mesg )

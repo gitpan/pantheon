@@ -2,7 +2,7 @@
 
 =head1 SYNOPSIS
 
- $0 -r range cmd ..
+ $0 -r range [--timeout seconds] [--max number] cmd ..
 
 =cut
 use strict;

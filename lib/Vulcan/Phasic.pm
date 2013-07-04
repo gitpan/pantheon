@@ -76,28 +76,31 @@ sub run
     my %quiesce = map { $_ => 1 } @{ $self->{quiesce} };
 
     my @queue = map { Thread::Queue->new() } 0, 1;
-    my ( %busy, %fail );
+    my ( %busy, %err );
 
     for my $i ( 1 .. ( sort { $a <=> $b } 0 + keys %dst, $MAX )[0] )
     {
         threads::async
         {
-            my ( $ok, $src, $dst, $info ) = 1;
-            eval
+            while ( 1 )
             {
-                local $SIG{ALRM} = sub { die 'timeout' if $src };
-
-                while ( sleep 1 )
+                my ( $ok, $src, $dst, $info ) = 1;
+                eval
                 {
-                    next unless $queue[0]->pending();
-                    last if ( $src, $dst ) = $queue[0]->dequeue_nb( 2 );
-                }
+                    local $SIG{ALRM} = sub { die "timeout\n" if $src };
 
-                $info = &$code( $src, $dst, %run );
-            };
-            if ( $@ ) { $info = $@; $ok = 0 }
-            $queue[1]->enqueue( $src, $dst, $ok, $info );
-        }
+                    while ( sleep 1 )
+                    {
+                        next unless $queue[0]->pending();
+                        last if ( $src, $dst ) = $queue[0]->dequeue_nb( 2 );
+                    }
+
+                    $info = &$code( $src, $dst, %run );
+                };
+                if ( $@ ) { $ok = 0; $info = $@ }
+                $queue[1]->enqueue( $src, $dst, $ok, $info );
+            }
+        }->detach;
     }
 
     for ( my $now = time; %dst || %busy; sleep 1 )
@@ -105,10 +108,22 @@ sub run
         while ( $queue[1]->pending() )
         {
             my ( $src, $dst, $ok, $info ) = $queue[1]->dequeue_nb( 4 );
-            @src{ $src, $dst } = delete @busy{ $src, $dst };
+            my @w8 = delete @busy{ $src, $dst };
 
-            delete $src{$src} if $quiesce{$src};
-            delete $dst{$dst} unless $ok || $fail{$dst} ++ < $retry;
+            $src{$src} = $w8[0] unless $quiesce{$src};
+
+            if ( $ok )
+            {
+                $src{$dst} = $w8[1] unless $quiesce{$dst};
+            }
+            elsif ( $err{$dst} ++ < $retry )
+            {
+                $dst{$dst} = $w8[1];
+            }
+            else
+            {
+                delete $dst{$dst};
+            }
 
             $log->say( "$dst <= $src: $info" );
             $now = time;
@@ -120,26 +135,25 @@ sub run
         }
         elsif ( %src && %dst )
         {
-            $queue[0]->enqueue( $self->pick( \%src, \%dst, \%busy ) );
+            my $dst = ( keys %dst )[ int( rand $now ) % 2 ? -1 : 0 ];
+            my $w8 = $busy{$dst} = delete $dst{$dst};
+            my %dist = map { $_ => abs( $src{$_} - $w8 ) } keys %src;
+            my $src = ( sort { $dist{$a} <=> $dist{$b} } keys %dist )[0];
+
+            $busy{$src} = delete $src{$src};
+            $queue[0]->enqueue( $src, $dst );
         }
     }
 
-    $self->{fail} = [ grep { $fail{$_} > $retry } keys %fail ];
-    map { $_->detach() } threads->list();
+    $self->{failed} = [ grep { $err{$_} > $retry } keys %err ];
     return $self;
 }
 
-## select a pair source and destination nodes, with minimal distance.
-sub pick
+sub failed
 {
-    my ( $this, $src, $dst, $busy ) = @_;
-    my $d = each %$dst;
-    my $w8 = $busy->{$d} = delete $dst->{$d};
-
-    my %dist = map { $_ => abs( $src->{$_} - $w8 ) } keys %$src;
-    my ( $s ) = sort { $dist{$a} <=> $dist{$b} } keys %dist;
-    $busy->{$s} = delete $src->{$s};
-    return $s, $d;
+    my $self = shift;
+    my $failed = $self->{failed};
+    return wantarray ? @$failed : $failed;
 }
 
 1;

@@ -1,10 +1,17 @@
 Revision history for pantheon.
 
+0.04    2013.07.04
+        tools/poros/client - bugfix
+        tools/mrsync - new tool
+        Vulcan::Mrsync - new module
+        Vulcan::Phasic - bugfix
+        Hermes - new feature, query cond supports regex
+
 0.03    2013.07.01
         Vulcan::RRLogDir - new module
         Vulcan::Daemon - bugfix
         MIO::TCP - input buffer
-        MIO::CMD - input buffer, minor bugfix
+        MIO::CMD - input buffer, bugfix
         Poros - bugfix
         tools/daemon - bugfix
         tools/hermes/cache - new feature -d

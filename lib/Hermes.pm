@@ -133,7 +133,7 @@ sub cluster
 
     for my $col ( $self->{db}->column() )
     {
-        next unless my $cond = $self->query_cond;
+        next unless my $cond = $self->query_cond( $col );
         if ( ref $cond ) { $cond{$col} = $cond } else { $select = $col }
     }
 
@@ -143,14 +143,22 @@ sub cluster
 
 =head3 query_cond
 
- <condition_symbol> <expr>
+ <condition_symbol> <expr> |
+ <condition_symbol> <regex>
 
 =cut
 sub query_cond
 {
-    my $self = shift;
+    my ( $self, $col ) = splice @_;
     die unless my $op = $self->op( QUERY => 1 );
     return $op if $op eq 'select';
+
+    if ( defined $col && $self->token( 'regex' ) )
+    {
+        my $regex = $self->match();
+        return [ ( $op eq 'in' ), 
+            grep { $_ =~ $regex } map { @$_ } $self->{db}->select( $col ) ];
+    }
 
     my $range = $self->expr;
     return $range->has( '*' ) ? undef : [ ( $op eq 'in' ), $range->list ];

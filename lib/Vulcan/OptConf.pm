@@ -98,7 +98,7 @@ sub get
 {
     my $self = shift;
     Getopt::Long::Configure( @CONF ) if @CONF;
-    Pod::Usage::pod2usage( -input => $0, -output => \*STDERR )
+    Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
         if ! Getopt::Long::GetOptions( $self->{$THIS}, @_ )
         || $ARGC < 0 && ! @ARGV || $ARGC > 0 && @ARGV != $ARGC;
     return $self;

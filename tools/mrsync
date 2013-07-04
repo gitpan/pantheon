@@ -1,0 +1,34 @@
+#!/usr/bin/perl -w
+
+=head1 SYNOPSIS
+
+ $0 --src src-range --dst dst-range --sp src-path [--dp dst-path]
+ [--timeout seconds] [--max number] [--retry number] [rsync options] 
+
+=cut
+use strict;
+
+use Hermes;
+use Vulcan::Mrsync;
+use Vulcan::OptConf;
+
+$| ++;
+
+@Vulcan::OptConf::CONF = qw( pass_through );
+
+my $option = Vulcan::OptConf->load();
+my %o = $option
+    ->get( qw( src=s dst=s sp=s dp=s timeout=i max=i retry=i ) )->dump();
+
+my $range = Hermes->new( $option->dump( 'range' ) );
+
+my $mrsync = Vulcan::Mrsync->new
+(
+    ( map { $_ => delete $o{$_} } qw( sp dp ) ),
+    map { $_ => [ $range->load( delete $o{$_} || [] )->list ] } qw( src dst )
+);
+
+$o{opt} = join ' ', @ARGV if @ARGV;
+
+exit 0 unless my @failed = $mrsync->run( %o )->failed();
+die $range->load( \@failed )->dump . ": failed.\n\n";
