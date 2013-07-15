@@ -23,7 +23,9 @@ use warnings;
 use Carp;
 use YAML::XS;
 use File::Spec;
+use File::Basename;
 use Compress::Zlib;
+use FindBin qw( $RealBin );
 
 =head1 METHODS
 
@@ -49,24 +51,14 @@ Inverse of dump().
 =cut
 sub load
 {
-    my ( $class, $query ) = splice @_;
-    my %self;
+    my ( $class, $query, $yaml ) = splice @_;
 
     die "invalid $query\n" unless
-        ( $self{yaml} = Compress::Zlib::uncompress( $query ) )
-        && eval { $query = YAML::XS::Load $self{yaml} }
-        && ref $query eq 'HASH' && ( $self{code} = delete $query->{code} );
+        ( $yaml = Compress::Zlib::uncompress( $query ) )
+        && eval { $query = YAML::XS::Load $yaml }
+        && ref $query eq 'HASH' && $query->{code};
 
-    my $user = delete $query->{user};
-
-    if ( ! $< && $user && $user ne ( getpwuid $< )[0] )
-    {
-        die "invalid user $user\n" unless my @pw = getpwnam $user;
-        my @user = map { sprintf '%d', $_ } @pw[2,3];
-        ( $<, $>, $(, $) ) = ( @user[0,0,1], join ' ', @user[1,1] );
-    }
-
-    bless { %self, query => $query }, ref $class || $class;
+    bless { yaml => $yaml, query => $query }, ref $class || $class;
 }
 
 =head3 run( %path )
@@ -78,7 +70,8 @@ run code in mutual exclusion mode.
 sub run
 {
     my ( $self, %path ) = @_;
-    my ( $code, $query ) = @$self{ qw( code query ) };
+    my $query = $self->{query};
+    my ( $code, $user ) = @$query{ qw( code user ) };
 
     die "already running $code\n" if ( $code =~ /\.mx$/ ) && !
         Vulcan::ProcLock->new( File::Spec->join( $path{run}, $code ) )->lock();
@@ -87,7 +80,14 @@ sub run
         -f ( $code = File::Spec->join( $path{code}, $code ) )
         && ( $code = do $code ) && ref $code eq 'CODE';
 
-    &$code( %$query );
+    if ( ! $< && $user && $user ne ( getpwuid $< )[0] )
+    {
+        die "invalid user $user\n" unless my @pw = getpwnam $user;
+        my @user = map { sprintf '%d', $_ } @pw[2,3];
+        ( $<, $>, $(, $) ) = ( @user[0,0,1], join ' ', @user[1,1] );
+    }
+
+    &$code( pdir => File::Basename::dirname( $RealBin ), %$query );
 }
 
 =head3 yaml()

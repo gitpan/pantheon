@@ -30,8 +30,7 @@ our $HANDLE = \*STDERR;
 sub new
 {
     my ( $class, $handle ) = splice @_;
-    confess 'cannot write to handle' unless -w ( $handle ||= $HANDLE );
-    bless { handle => $handle, mutex => Thread::Semaphore->new() },
+    bless { handle => $handle || $HANDLE, mutex => Thread::Semaphore->new() },
         ref $class || $class;
 }
 

@@ -20,12 +20,13 @@ $Vulcan::OptConf::ARGC = -1;
 my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( range=s user=s timeout=i max=i ) )->dump();
 my %query = ( code => shift, logname => operator(), argv => \@ARGV );
+my $port = delete $o{port} || PORT;
 
 $query{user} = delete $o{user} if $o{user};
 
 my $range = Hermes->new( $option->dump( 'range' ) );
 my %result = MIO::TCP
-    ->new( map { join ':', $_, PORT } $range->load( delete $o{range} )->list )
+    ->new( map { join ':', $_, $port } $range->load( delete $o{range} )->list )
     ->run( %o, input => Poros::Query->dump( \%query ) );
 
 my %mesg;
@@ -33,17 +34,15 @@ while ( my ( $type, $mesg ) = each %result )
 {
     while ( my ( $mesg, $node ) = each %$mesg )
     {
-        $mesg =~ s/\n--- \d+$//;
-        push @{ $mesg{$type} }, join ': ', $range->load( $node )->dump, $mesg;
+        map { $_ =~ s/:$port$// } @$node;
+
+        $mesg =~ s/--- \d+\n$//;
+        $node = $range->load( $node )->dump();
+        $mesg{$type}{$node} = YAML::XS::Load( $mesg ) if $mesg;
     }
 }
 
-for my $io ( sort keys %mesg )
-{
-    print "---\n$io:\n";
-    map { print "  $_" } @{ $mesg{$io} };
-}
-
+YAML::XS::DumpFile \*STDERR, \%mesg if %mesg;
 exit 0;
 
 sub operator

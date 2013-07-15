@@ -57,9 +57,16 @@ sub new
         my ( $src, $dst, %param ) = splice @_;
         my $sp = $src{$src} ? $sp : $dp;
         my $ssh = 'ssh -o StrictHostKeyChecking=no';
-        my $rsync = my $cmd = << "EOF";
-$ssh $dst nice -n 19 ionice -c3 rsync -e "$ssh" $param{opt} $src:$sp $dp
-EOF
+
+        my $cmd_user = << "USER";
+$ssh $dst nice -n 19 'rsync -e "$ssh" $param{opt} $src:$sp $dp'
+USER
+
+        my $cmd_root = << "ROOT";
+$ssh $dst nice -n 19 ionice -c3 'rsync -e "$ssh" $param{opt} $src:$sp $dp'
+ROOT
+        my $rsync = my $cmd = $< ? $cmd_user : $cmd_root;
+
         chop $rsync;
         &{ $param{log} }( $cmd );
         return system( $rsync ) ? die "ERR: $cmd" : 'OK';

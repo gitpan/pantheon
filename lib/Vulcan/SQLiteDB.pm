@@ -180,9 +180,9 @@ sub query
 
     while ( my ( $col, $cond ) = each %cond )
     {
-        my $in = shift @$cond ? 'IN' : 'NOT IN';
+        my $in = $cond->[0] ? 'IN' : 'NOT IN';
         push @cond, sprintf "$col $in ( %s )",
-            join ',', map { DBI::neat( $_ ) } @$cond;
+            join ',', map { DBI::neat( $cond->[$_] ) } 1 .. @$cond - 1;
     }
     return @cond ? ' WHERE ' . join ' AND ', @cond : '';
 }

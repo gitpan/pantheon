@@ -13,7 +13,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 =head1 MODULES
 
@@ -109,6 +109,7 @@ A suite of utility modules
  Vulcan::SysInfo
  Vulcan::Symlink
  Vulcan::RRLogDir
+ Vulcan::Mrsync
 
 =head1 AUTHOR
 

@@ -6,15 +6,19 @@ Vulcan::OptConf - Get command line options.
 =cut
 use strict;
 use warnings;
+
+use Cwd;
 use Carp;
 use YAML::XS;
-use Pod::Usage;
+use File::Spec;
+use File::Basename;
 use Getopt::Long;
+use Pod::Usage;
 use FindBin qw( $RealScript $RealBin );
 
 $| ++;
 
-our ( $ARGC, $THIS, $CONF, @CONF ) = ( 0, $RealScript, '.config' );
+our ( $ARGC, $THIS, $CONF, $ROOT, @CONF ) = ( 0, $RealScript, '.config' );
 
 =head1 SYNOPSIS
 
@@ -42,7 +46,7 @@ sub load
     my $class = shift;
     my $self = {};
     my @conf =  map { File::Spec->join( $RealBin, $_, $CONF ) } qw( . .. );
-    my ( $conf ) = @_ ? @_ : grep { -e $_ } @conf;
+    my ( $conf ) = @_ ? @_ : grep { -l $_ || -f $_ } @conf;
 
     if ( $conf )
     {
@@ -53,6 +57,27 @@ sub load
         $self = eval { YAML::XS::LoadFile( $conf ) };
         confess "$error: $@" if $@;
         confess "$error: not HASH" if ref $self ne 'HASH';
+
+        $ROOT ||= dirname( dirname( Cwd::abs_path( $conf ) ) );
+        for my $conf ( values %$self )
+        {
+            while ( my ( $opt, $value ) = each %$conf )
+            {
+                unless ( my $ref = ref $value )
+                {
+                    $conf->{$opt} = $class->macro( $conf->{$opt} );
+                }
+                elsif ( $ref eq 'ARRAY' )
+                {
+                    $value = [ map { $class->macro( $_ ) } @$value ];
+                }
+                elsif ( $ref eq 'HASH' )
+                {
+                    map { $value->{$_} = $class->macro( $value->{$_} ) }
+                        keys %$value;
+                }
+            }
+        }
     }
 
     $self->{$THIS} ||= {};
@@ -103,5 +128,23 @@ sub get
         || $ARGC < 0 && ! @ARGV || $ARGC > 0 && @ARGV != $ARGC;
     return $self;
 }
+
+=head3 macro( $path )
+
+Replace $ROOT in $path if defined.
+
+=cut
+sub macro
+{
+    my ( $self, $path ) = splice @_;
+
+    if ( $path && defined $ROOT )
+    {
+        $path =~ s/\$ROOT\b/$ROOT/g;
+        $path =~ s/\${ROOT}/$ROOT/g;
+    }
+
+    return Cwd::abs_path( $path );
+};
 
 1;

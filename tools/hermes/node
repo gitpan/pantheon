@@ -15,23 +15,22 @@ use Hermes::DBI::Root;
 use Hermes::DBI::Cache;
 use Vulcan::OptConf;
 
+use constant DOWN => 1;
+
 $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
-use constant { OK => 0, DOWN => 1 };
-
 my $option = Vulcan::OptConf->load();
-my %o = $option->set( value => DOWN )
-    ->get( qw( range=s value=s cluster=s table=s quiet ) )->dump();
+my %o = $option->get( qw( range=s value=s cluster=s table=s quiet ) )->dump();
 
 my %range = $option->dump( 'range' );
 my $range = Hermes->new( %range );
 my $cache = Hermes::DBI::Cache->new( $range{cache} );
-my %db;
 
 my %table = map { $_ => 1 } $range->load( $o{table} || [] )->list();
 my %cluster = map { $_ => 1 } $range->load( $o{cluster} || [] )->list();
+my ( $value, %db ) = defined $o{value} ? $o{value} : DOWN;
 
 for my $node ( $range->load( $o{range} )->list() )
 {
@@ -45,7 +44,7 @@ for my $node ( $range->load( $o{range} )->list() )
         $db{$cluster}{handle} ||= Hermes::DBI::Root
             ->new( File::Spec->join( $o{root}, $cluster ) );
 
-        $record->[-1] = $o{value};
+        $record->[-1] = $value;
         push @{ $db{$cluster}{record} }, $record;
     }
 }

@@ -2,11 +2,12 @@
 
 =head1 SYNOPSIS
 
- $0 --src src-range --dst dst-range --sp src-path [--dp dst-path]
+ $0 [--src src-range] --dst dst-range --sp src-path [--dp dst-path]
  [--timeout seconds] [--max number] [--retry number] [rsync options] 
 
 =cut
 use strict;
+use Sys::Hostname;
 
 use Hermes;
 use Vulcan::Mrsync;
@@ -17,7 +18,7 @@ $| ++;
 @Vulcan::OptConf::CONF = qw( pass_through );
 
 my $option = Vulcan::OptConf->load();
-my %o = $option
+my %o = $option->set( retry => 2, timeout => 300, src => hostname() )
     ->get( qw( src=s dst=s sp=s dp=s timeout=i max=i retry=i ) )->dump();
 
 my $range = Hermes->new( $option->dump( 'range' ) );

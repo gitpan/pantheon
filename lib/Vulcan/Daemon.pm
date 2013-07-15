@@ -73,6 +73,8 @@ sub new
     confess "$error: $@" if $@; 
     confess "$error: not HASH" if ref $conf ne 'HASH';
     confess "$error: command not defined" unless $conf->{command};
+
+    $conf->{command} = Vulcan::Daemon::Path->macro( $conf->{command} );
     bless \%self, ref $class || $class;
 }
 

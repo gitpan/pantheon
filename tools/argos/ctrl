@@ -67,7 +67,5 @@ exit 0;
 
 sub operator
 {
-    #return unless my @p = qx( klist | grep Default );
-    #return $p[0] =~ /: ([^@]+)@/ ? $1 : undef;
     my $name = `logname`; chop $name; return $name;
 }

@@ -1,5 +1,32 @@
 Revision history for pantheon.
 
+0.05    2013.07.08
+        janus/main/path - default janus path config
+        argos/conf.example/main/map 
+        argos/conf.example/map/sysinfo 
+        argos/main/path - default argos path config
+        argos/code/b.generic - generic batch plugin
+        argos/code/m.sysinfo - sysinfo map plugin
+        daemon/path - default daemon path config
+        daemon/conf/poros.proxy - new service, poros proxy
+        daemon/conf/hermes.cache - new service, hermes cache 
+        poros/code/janus - new plugin
+        poros/code/sysinfo - new plugin
+        tools/poros/client - bugfix
+        tools/sysinfo - new tool
+        tools/hermes/purge - new tool
+        tools/mrsync - new feature, default src to invoking host
+        tools/.config - use path macro $ROOT
+        Vulcan::SysInfo - new feature, IFACE eth speed
+        Vulcan::OptConf - new feature, path macro $ROOT
+        Vulcan::DirConf - new feature, path macro $RealBin and $Bin
+        Vulcan::Daemon - new feature, path macro $RealBin and $Bin
+        Vulcan::SQLiteDB - bugfix
+        Vulcan::Mrsync - bugfix
+        Vulcan::Logger - bugfix
+        Poros::Query - new feature, bugfix
+        update - new feature, --dist --install
+
 0.04    2013.07.04
         tools/poros/client - bugfix
         tools/mrsync - new tool

@@ -71,6 +71,7 @@ tools/janus/tail
 tools/loop
 tools/.config
 tools/range
+tools/sysinfo
 tools/fping-r
 tools/poros/proxy
 tools/poros/client
@@ -78,10 +79,22 @@ tools/mrsync
 tools/hermes/dump
 tools/hermes/load
 tools/hermes/cache
+tools/hermes/purge
 tools/hermes/node
 tools/argos/ctrl
 tools/argos/run
 tools/daemon
 tools/mcmd
+poros/code/janus
+poros/code/sysinfo
+daemon/path
+daemon/conf/poros.proxy
+daemon/conf/hermes.cache
+janus/main/path
+argos/main/path
+argos/conf.example/main/map
+argos/conf.example/map/sysinfo
+argos/code/m.sysinfo
+argos/code/b.generic
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

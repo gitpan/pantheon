@@ -54,7 +54,7 @@ sub new
     {
         for ( map { [ ( split /\s+/, $_, 7 )[ 5, 1..4 ] ] } `df $_` )
         {
-            map { $_ = $1 / 100 if $_ =~ /(\d+)%/ } @$_;
+            map { $_ = $1 if $_ =~ /(\d+)%/ } @$_;
             push @data, $_;
         }
 
@@ -78,6 +78,17 @@ sub new
         map { push @{ $self{metric}{$type}{ shift @$_ } }, @$_ } @$stat;
     }
 
+    if ( `which ethtool` )
+    {
+        while ( my ( $iface, $data ) = each %{ $self{metric}{IFACE} } )
+        {
+            my $info = `ethtool $iface | grep Speed`;
+            push @$data, $info && $info =~ /:\s(\d+\D+)\b/ ? $1 : '-'
+        }
+
+        push @{ $legend{IFACE} }, 'speed';
+    }
+
     for my $type ( keys %legend )
     {
         my $i = 0;
@@ -89,22 +100,33 @@ sub new
 
 =head1 METHODS
 
-=head3 info
+=head3 info( $type )
 
-Returns I<record> and I<legend> indexed by I<type>.
+Returns data of $type if $type is specified. Otherwise returns I<record>
+and I<legend> indexed by I<type>.
 
 =cut
 sub info
 {
-    my ( $self, %info ) = shift;
+    my ( $self, $type ) = splice @_;
     my ( $legend, $metric ) = @$self{ qw( legend metric ) };
+    my %info;
 
-    for my $type ( keys %$legend )
+    if ( defined $type && ( $legend = $legend->{$type} ) )
     {
-        $info{$type}{legend} = [ sort keys %{ $legend->{$type} } ];
-        $info{$type}{record} = [ sort keys %{ $metric->{$type} } ];
+        while ( my ( $key, $data ) = each %{ $metric->{$type} } )
+        {
+            map { $info{$key}{$_} = $data->[ $legend->{$_} ] } keys %$legend;
+        }
     }
-
+    else
+    {
+        for $type ( keys %$legend )
+        {
+            $info{$type}{legend} = [ sort keys %{ $legend->{$type} } ];
+            $info{$type}{record} = [ sort keys %{ $metric->{$type} } ];
+        }
+    }
     return wantarray ? %info : \%info;
 }
 
@@ -126,7 +148,7 @@ sub eval
 
         $test =~ s/$REGEX/$value/;
     }
-    
+
     return eval $test ? $test : undef;
 }
 

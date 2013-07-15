@@ -1,32 +1,137 @@
 #!/usr/bin/perl -w
-# update manifest
+
 use strict;
+use POSIX;
+use Tie::File;
 use File::Basename;
 use FindBin qw( $Bin $Script );
 
+use lib "$Bin/lib";
+use Vulcan::OptConf;
+
 $| ++;
 
-my $module = basename( $Bin );
-my $list = join "\n",
-my ( $HIST, $MAKE, $LIST ) = qw( Changes Makefile.PL MANIFEST );
+our ( $HIST, $MAKE, $LIST ) = qw( Changes Makefile.PL MANIFEST );
+our $MODULE = basename( $Bin );
+our @INSTALL = qw(
+    tools
+    poros/code
+    daemon/path
+    daemon/conf
+    janus/main/path
+    argos/main/path
+    argos/conf.example
+    argos/code
+);
 
-die $! unless chdir $Bin && open my $handle, '>', $LIST; ## create manifest
+if ( my %o = Vulcan::OptConf->load()->get( qw( install=s dist ) )->dump() )
+{
+    makefile();
+    make();
 
-$list = << "EOF";
-README
-$list
-$Script
-EOF
+=head1 SYNOPSIS
 
-print $handle $list, `find lib t tools -type f`;
-close $handle;
+=head3 distro
 
-system( "vi $HIST && cat $LIST" ); ## update changes
-warn << "EOF";
+ $0 --dist
+
+=cut
+    if ( $o{dist} )
+    {
+        make( dist => 0 );
+    } 
+=head3 install
+
+ $0 --install /install/path
+
+=cut
+    elsif ( my $dir = $o{install} )
+    {
+        install( $dir );
+    }
+}
+=head3 update
+
+ $0 
+
+=cut
+else
+{
+    version();
+    manifest();
+    changes();
+}
+
+exit 0;
+
+sub makefile
+{
+    exit 1 if system "cd $Bin && perl $MAKE";
+}
+
+sub install
+{
+    my $dir = shift;
+    my $mkdir = "mkdir -p $dir";
+    my $untar = "tar xvf - )";
+    my $tar = "tar cf - @INSTALL | ( cd $dir; ";
+
+    make( install => 1 );
+    map { $_ = "sudo $_" } $mkdir, $untar unless canwrite( $dir );
+    exit 1 if system( $mkdir ) || system( $tar . $untar );
+}
+
+sub make
+{
+    my ( $rule, $sudo ) = splice @_;
+    my $make = 'make';
+
+    $make = "$make $rule" if $rule;
+    $make = "sudo $make" if $sudo;
+    exit 1 if system $make;
+}
+
+sub version
+{
+    my $path = "$Bin/lib/$MODULE.pm";
+    require $path;
+
+    my $version = eval "\$${MODULE}::VERSION\n";
+    my $time = POSIX::strftime( '%Y.%m.%d', localtime( ( stat $path )[9] ) );
+
+    tie my @hist, 'Tie::File', $HIST;
+    for ( my $i = 0; $i < @hist; $i ++ )
+    {
+        next unless $hist[$i] =~ /^(\d+\S+)/;
+        last if $1 eq $version;
+        splice @hist, $i, 0, "$version    $time\n\n"; last;
+    }
+    untie @hist;
+}
+
+sub manifest
+{
+    die $! unless chdir $Bin && open my $handle, '>', $LIST;
+    map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST, $Script;
+    print $handle `find lib t @INSTALL -type f`;
+    close $handle;
+}
+
+sub changes
+{
+    system "vi $HIST && cat $LIST"; ## update changes
+    warn << "MEMO";
 
 Be sure that the following are up to date.
 
-    VERSION and MODULES in $module.pm and PREREQ_PM in $MAKE
+    VERSION and MODULES in $MODULE.pm and PREREQ_PM in $MAKE
 
-EOF
-exit 0;    
+MEMO
+}
+
+sub canwrite
+{
+    my $dir = shift;
+    $dir = dirname( $dir ) while ! -e $dir;
+    return -w $dir;
+}

@@ -20,9 +20,12 @@ Vulcan::DirConf - Interface module: directory configuration with a YAML file.
 =cut
 use strict;
 use warnings;
+
+use Cwd;
 use Carp;
 use YAML::XS;
 use File::Spec;
+use FindBin qw( $Bin $RealBin );
 
 sub new
 {
@@ -44,20 +47,27 @@ sub new
     {
         for ( $loop = 0; my ( $name, $path ) = each %$conf; )
         {
+            $conf->{$name} = $path = $class->macro( $path );
             $loop = $path{$name} = delete $conf->{$name} if $path !~ /\$/;
         }
 
         while ( my ( $name, $path ) = each %path )
         {
-            map { $conf->{$_} =~ s/\$$name\b/$path/g } keys %$conf;
+            for my $dir ( keys %$conf )
+            {
+                $conf->{$dir} =~ s/\$$name\b/$path/g;
+                $conf->{$dir} =~ s/\${$name}/$path/g;
+            }
         }
     }
 
     confess "$error: unresolved variable" if %$conf;
+
     my $self = bless \%conf, ref $class || $class;
 
     map { confess "$error: $_ not defined"
-        unless $conf{path}{$_} = $path{$_} } $self->define();
+        unless $conf{path}{$_} = Cwd::abs_path( $path{$_} ) } $self->define();
+
     return $self;
 }
 
@@ -106,6 +116,24 @@ sub path
     return $path unless defined $name;
     return $path unless ( $path = $path->{$name} ) && @_;
     File::Spec->join( $path, @_ );
+}
+
+=head3 macro( $path )
+
+Replace $RealBin and $Bin in $path
+
+=cut
+sub macro
+{
+    my ( $self, $path ) = splice @_;
+
+    if ( $path )
+    {
+        $path =~ s/\$Bin\b/$Bin/g; $path =~ s/\$RealBin\b/$RealBin/g;
+        $path =~ s/\${Bin}/$Bin/g; $path =~ s/\${RealBin}/$RealBin/g;
+    }
+
+    return $path;
 }
 
 1;

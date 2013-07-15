@@ -1,0 +1,7 @@
+---
+map:
+  port: 12345
+  timeout: 10
+  test:
+    a: '{MISC}{data}{uptime} > 1'
+    b: '{MISC}{data}{uptime} < 1'
