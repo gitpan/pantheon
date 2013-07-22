@@ -1,0 +1,50 @@
+#!# perl: argos/code/m.http
+use strict;
+use URI::Escape;
+use LWP::UserAgent;
+
+use Vulcan::Grep;
+
+our %PARAM =
+(
+    timeout => 10, port => 80, uri => '/', code => [ 200 ], grep => [],
+);
+
+our %ERROR =
+(
+    down => 'web service down', null => 'no content',
+    cont => 'invalid response', code => 'invalid code',
+);
+
+return sub
+{
+    my ( %param, %mesg ) = @_;
+    my ( $batch, $param ) = @param{ qw( batch param ) };
+    my ( $port, $uri, $code, $grep, $timeout ) =
+        map { $param->{$_} || $PARAM{$_} } qw( port uri code grep timeout );
+
+    map { $_ = [ $_ ] if ref $_ ne 'ARRAY' } $code, $grep;
+    $uri = uri_escape( $uri );
+
+    my $ua = LWP::UserAgent->new();
+
+    $ua->timeout( $timeout );
+    $ua->env_proxy;
+
+    for my $node ( @$batch )
+    {
+        my $cont;
+        my $re = $ua->get( sprintf '%s:%s%s', $node, $port, $uri );
+        my $rc = $re->code();
+        my $err = ! $re->is_success() ? 'down'
+            : ! grep { $_ == $rc } @$code ? 'code'
+            : ! @$grep ? next
+            : ! ( $cont = $re->decoded_content() ) ? 'null'
+            : ! Vulcan::Grep->new( input => $cont, rule => $grep )->eval()
+            ? 'cont' : next;
+
+        push @{ $mesg{error}{ $ERROR{$err} } }, $node;
+    }
+
+    return \%mesg;
+};

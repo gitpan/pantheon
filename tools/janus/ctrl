@@ -8,6 +8,9 @@ use Janus::Conf;
 use Janus::Ctrl;
 use Vulcan::OptConf;
 use Vulcan::ProcLock;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 $| ++;
 

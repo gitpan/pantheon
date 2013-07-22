@@ -2,7 +2,7 @@
 
 use strict;
 
-use Janus;
+use Argos::Reduce
 use Vulcan::OptConf;
 use Vulcan::Sudo;
 
@@ -11,17 +11,19 @@ Vulcan::Sudo->sudo();
 $| ++;
 
 $Vulcan::OptConf::ARGC = 1;
-$Vulcan::OptConf::THIS = 'janus';
+$Vulcan::OptConf::THIS = 'argos';
 
 my %o = Vulcan::OptConf->load()->get( qw( check ) )->dump();
 
 =head1 SYNOPSIS
 
-Launch janus.
+Launch argos reduce.
 
-$0 name [--check]
+$0 name [--test]
 
 =cut
-my $janus = Janus->new( %o, name => shift );
-my $stat = $o{check} ? 0 : $janus->run();
-exit $stat;
+$o{conf} = delete $o{reduce};
+my $argos = Argos::Reduce->new( %o, name => shift );
+
+$argos->run() unless $o{check}; 
+exit 0;

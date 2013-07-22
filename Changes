@@ -1,12 +1,26 @@
 Revision history for pantheon.
 
+0.06    2013.07.15
+        argos/conf.example/conf.reduce.r.generic 
+        tools/range - new feature, accept input from STDIN
+        tools/argos/run - removed, replaced by map * and reduce *
+        tools/argos/map - new tool, * replacing tools/argos/run --map
+        tools/argos/reduce - new tool, * replacing tools/argos/run --reduce
+        tools/{argos,janus,hermes}/* - Vulcan::Sudo->sudo()
+        tools/{sysinfo,daemon} - Vulcan::Sudo->sudo()
+        Argos::Reduce - bugfix
+        Vulcan::Grep - new module
+        Vulcan::Sudo - new module
+        poros/code/dmesg - new plugin
+        argos/code/m.http - new plugin, http map
+
 0.05    2013.07.08
         janus/main/path - default janus path config
-        argos/conf.example/main/map 
-        argos/conf.example/map/sysinfo 
+        argos/conf.example/main.map 
+        argos/conf.example/conf.map.sysinfo 
         argos/main/path - default argos path config
-        argos/code/b.generic - generic batch plugin
-        argos/code/m.sysinfo - sysinfo map plugin
+        argos/code/b.generic - new plugin, generic batch
+        argos/code/m.sysinfo - new plugin, sysinfo map
         daemon/path - default daemon path config
         daemon/conf/poros.proxy - new service, poros proxy
         daemon/conf/hermes.cache - new service, hermes cache 

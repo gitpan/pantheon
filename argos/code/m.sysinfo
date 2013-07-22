@@ -1,6 +1,7 @@
 #!# perl: argos/code/m.sysinfo
 use strict;
 
+use Hermes;
 use MIO::TCP;
 use Poros::Query;
 
@@ -9,8 +10,9 @@ return sub
     my ( %param, %mesg ) = @_;
     my ( $batch, $param ) = @param{ qw( batch param ) };
     my ( $test, $port ) = @$param{ qw( test port ) };
+    my $range = Hermes->new();
 
-    my %query = ( code => 'sysinfo', argv => [ %$test ] );
+    my %query = ( code => 'sysinfo', argv => [ $test ] );
     my %result = MIO::TCP
         ->new( map { join ':', $_, $port } @$batch )
         ->run( %$param, input => Poros::Query->dump( \%query ) );
@@ -19,7 +21,6 @@ return sub
     {
         while ( my ( $mesg, $node ) = each %$mesg )
         {
-            map { $_ =~ s/:$port$// } @$node;
             $mesg =~ s/--- \d+\n$//;
             $mesg{error}{$mesg} = $node if $mesg;
         }

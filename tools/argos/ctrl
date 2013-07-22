@@ -7,6 +7,9 @@ use Argos::Path;
 use Argos::Conf;
 use Argos::Ctrl;
 use Vulcan::OptConf;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 $| ++;
 

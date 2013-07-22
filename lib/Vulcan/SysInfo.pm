@@ -78,7 +78,7 @@ sub new
         map { push @{ $self{metric}{$type}{ shift @$_ } }, @$_ } @$stat;
     }
 
-    if ( `which ethtool` )
+    if ( `which ethtool` ) ## ethtool: speed
     {
         while ( my ( $iface, $data ) = each %{ $self{metric}{IFACE} } )
         {

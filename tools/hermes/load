@@ -13,6 +13,9 @@ use YAML::XS;
 use Hermes;
 use Hermes::DBI::Root;
 use Vulcan::OptConf;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 $| ++;
 $/ = undef;

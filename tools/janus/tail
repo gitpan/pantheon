@@ -7,6 +7,9 @@ use Janus::Path;
 use Janus::Conf;
 use Vulcan::OptConf;
 use Vulcan::ProcLock;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 $| ++;
 
@@ -30,7 +33,6 @@ my $conf = Janus::Conf->new( $o{conf} );
 my $range = Hermes->new( $option->dump( 'range' ) );
 my @name = grep { $conf->dump( $_ ) } map { $range->load( $_ )->list() } @ARGV;
 
-use Data::Dumper; print Dumper \%o;
 my ( $number, $interval ) = @o{ qw( number interval ) };
 my $mtime = 0;
 

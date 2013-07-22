@@ -23,7 +23,7 @@ use warnings;
 
 use Carp;
 use File::Spec;
-use Time::HiRes qw( time sleep alarm stat );
+use Time::HiRes qw( time sleep alarm );
 
 use Argos::Conf::Reduce;
 use Argos::Code::Reduce;
@@ -122,28 +122,29 @@ Argos logs activites to STDERR. See Vulcan::Logger.
         my ( %curr, %due ) = map { $_ => ( stat $_ )[9] } ## path => mtime
         my @path = map { glob File::Spec->join( $data, "*.$_" ) } @stat;
 
+        map { $stat{$_} = [ $now, -1 ] unless $stat{$_} } @path; ## new
+
         map { delete $stat{$_} if ! $curr{$_}
-            || $now - $curr{$_} > 2 * $freq } keys %stat; ## gone
-        map { $stat{$_}[0] = $now unless $stat{$_} } @path; ## new
+            || $now - $curr{$_} > $freq } keys %stat; ## gone or cruft
 
         while ( my ( $path, $stat ) = each %stat )
         {
-            my $prev = $stat->[1] || 0;
+            my $prev = $stat->[1];
             my $curr = int( ( $now - $stat->[0] ) / $freq );
-            push @{ $due{ $stat->[1] = $curr } }, $path ## due to run
-                if ! $prev || $prev < $curr;
+            push @{ $due{ $stat->[1] = $curr } }, $path
+                if $prev < 0 || $prev < $curr; ## due to run
         }
 
         for my $count ( sort { $b <=> $a } keys %due )
         {
             my $index = $esc ? int $count / $esc : -1;
-            $index = -1 if $index >= @$tier;
+            $index = @$tier - 1 if $index >= @$tier;
 
             $self->{reduce}->run
             (
-                %run, param => $self->{param}->dump( $name ),
-                name => $name, count => $count, data => $due{$count},
-                tier => $tier->[$index], timeout => $freq,
+                %run, param => $self->{param}->dump( $name ), name => $name,
+                data => $due{$count ++}, tier => $tier->[$index ++],
+                esc => $index, count => $count, timeout => $freq,
             );
         }
 

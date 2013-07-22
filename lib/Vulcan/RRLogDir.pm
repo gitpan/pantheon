@@ -11,7 +11,7 @@ use warnings;
 use Carp;
 use File::Spec;
 use File::Basename;
-use Time::HiRes qw( time stat );
+use Time::HiRes qw( time );
 
 use constant KILO => 1024;
 use constant BYTE => qw( B K M G T P E Z Y );

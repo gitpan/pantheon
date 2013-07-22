@@ -14,7 +14,8 @@ my $cluster = Hermes->new( $option->dump( 'range' ) );
 my $range = Hermes->new();
 my $output;
 
-map { $range->add( $cluster->load( $_ ) ) } @ARGV;
+map { $range->add( $cluster->load( $_ ) ) }
+    @ARGV, -t STDIN ? () : map { split /\s+/ } <STDIN>;
 
 =head1 SYNOPSIS
 

@@ -14,6 +14,9 @@ use Hermes;
 use Hermes::DBI::Root;
 use Hermes::DBI::Cache;
 use Vulcan::OptConf;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 use constant DOWN => 1;
 

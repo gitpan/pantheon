@@ -57,7 +57,9 @@ lib/Vulcan/DirConf.pm
 lib/Vulcan/Phasic.pm
 lib/Vulcan/OptConf.pm
 lib/Vulcan/ProcLock.pm
+lib/Vulcan/Grep.pm
 lib/Vulcan/SysInfo.pm
+lib/Vulcan/Sudo.pm
 t/manifest.t
 t/boilerplate.t
 t/pod.t
@@ -82,18 +84,22 @@ tools/hermes/cache
 tools/hermes/purge
 tools/hermes/node
 tools/argos/ctrl
-tools/argos/run
+tools/argos/reduce
+tools/argos/map
 tools/daemon
 tools/mcmd
 poros/code/janus
 poros/code/sysinfo
+poros/code/dmesg
 daemon/path
 daemon/conf/poros.proxy
 daemon/conf/hermes.cache
 janus/main/path
 argos/main/path
-argos/conf.example/main/map
-argos/conf.example/map/sysinfo
+argos/conf.example/conf.map.sysinfo
+argos/conf.example/main.reduce
+argos/conf.example/main.map
+argos/code/m.http
 argos/code/m.sysinfo
 argos/code/b.generic
 META.yml                                 Module YAML meta-data (added by MakeMaker)

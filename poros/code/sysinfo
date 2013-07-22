@@ -2,8 +2,8 @@
 
 use strict;
 use warnings;
-
 use YAML::XS;
+
 use Vulcan::SysInfo;
 use constant INTERVAL => 6;
 
@@ -11,17 +11,14 @@ return sub
 {
     my %param = @_;
     my @argv = @{ $param{argv} };
-    my $interval = @argv && @argv % 2 ? shift @argv : INTERVAL;
+    my $interval = @argv > 1 ? shift @argv : INTERVAL;
+    my $test = shift @argv;
 
-    return 0 unless my %test = @argv;
-
-    my $sar = Vulcan::SysInfo->new( interval => $interval );
-
-    while ( my ( $name, $test ) = each %test )
+    if ( $test && ref $test eq 'HASH' )
     {
-        delete $test{$name} if $sar->eval( $test );
+        my $sar = Vulcan::SysInfo->new( interval => $interval );
+        map { delete $test->{$_} if $sar->eval( $test->{$_} ) } keys %$test;
+        YAML::XS::DumpFile \*STDOUT, $test if %$test;
     }
-
-    YAML::XS::DumpFile \*STDOUT, \%test if %test;
     return 0;
-}
+};

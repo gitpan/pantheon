@@ -5,6 +5,9 @@ use YAML::XS;
 
 use Hermes;
 use Vulcan::SysInfo;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 my ( $info, %info ) = Vulcan::SysInfo->new( interval => 1 );
 my $range = Hermes->new();

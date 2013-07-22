@@ -112,7 +112,7 @@ sub run
         @$self{ qw( name conf path map batch param ) };
 
     my $interval = $conf->{interval};
-    my %run = ( cache => {} );
+    my %run = ( cache => {}, name => $name );
 
 =head1 OBJECTS and BEHAVIORS
 

@@ -9,6 +9,9 @@ use strict;
 
 use Hermes::Cache;
 use Vulcan::OptConf;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
 
 $| ++;
 
