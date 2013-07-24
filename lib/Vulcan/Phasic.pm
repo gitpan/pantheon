@@ -25,7 +25,7 @@ use Vulcan::Logger;
  );
 
 =cut
-our $MAX = 128;
+our ( $MAX, $POLL ) = ( 128, 0.1 );
 
 sub new
 {
@@ -89,7 +89,7 @@ sub run
                 {
                     local $SIG{ALRM} = sub { die "timeout\n" if $src };
 
-                    while ( sleep 1 )
+                    while ( sleep $POLL )
                     {
                         next unless $queue[0]->pending();
                         last if ( $src, $dst ) = $queue[0]->dequeue_nb( 2 );
@@ -103,7 +103,7 @@ sub run
         }->detach;
     }
 
-    for ( my $now = time; %dst || %busy; sleep 1 )
+    for ( my $now = time; %dst || %busy; sleep $POLL )
     {
         while ( $queue[1]->pending() )
         {

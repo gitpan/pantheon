@@ -1,8 +1,8 @@
-package Vulcan::RRLogDir;
+package Vulcan::Cruft;
 
 =head1 NAME
 
-Vulcan::RRLogDir - Round Robin Log Directory
+Vulcan::Cruft - Keep directories clean of cruft.
 
 =cut
 use strict;
@@ -17,17 +17,15 @@ use constant KILO => 1024;
 use constant BYTE => qw( B K M G T P E Z Y );
 use constant TIME => qw( S 1 M 60 H 3600 D 86400 W 604800 );
 
-our %LIMIT = ( count => 10 );
-
 =head1 SYNOPSIS
 
- use Vulcan::RRLogDir;
+ use Vulcan::Cruft;
 
- my $rrld = Vulcan::RRLogDir->new( @logdir );
+ my $cruft = Vulcan::Cruft->new( @logdir );
 
- $rrld->purge
+ unlink $cruft->cruft
  ( 
-    count => 20, ## default 10
+    count => 20,
     regex => qr/^foobar/,
     size => '100MB',
     age => '10days',
@@ -40,7 +38,7 @@ sub new
 
     for my $path ( @_ )
     {
-        $path = -l $path ? readlink $path : next;
+        $path = readlink $path if -l $path;
         push @path, $path if -d $path;
     }
 
@@ -49,20 +47,21 @@ sub new
 
 =head1 METHODS
 
-=head3 purge( %param )
+=head3 cruft( %param )
 
-Purge files according to %param. Returns invoking object.
+Purge files according to %param. Returns a list of 'cruft'.
 
  regex: pattern of file name.
  count: number of files to keep.
  size: total file size.
  age: age of file.
+ remove: remove cruft.
 
 =cut
-sub purge
+sub cruft
 {
     my $self = shift;
-    my ( %param, %stat, @file ) = ( %LIMIT, @_ );
+    my ( %param, %stat, @file, @cruft ) = @_;
     my ( $count, $regex ) = @param{ qw( count regex ) };
     my $size = $self->convert( size => $param{size} );
     my $age = $self->convert( time => $param{age} );
@@ -77,20 +76,22 @@ sub purge
             next if $regex && File::Basename::basename( $file ) !~ $regex;
 
             my ( $size, $ctime ) = ( stat $file )[7,10];
-            if ( $age && $ctime + $age < $now ) { unlink $file }
+            if ( $age && $now > $ctime + $age ) { push @cruft, $file }
             else { $stat{$file} = [ $size, $ctime, $file ] }
         }
 
         for my $file ( sort { $stat{$b}[1] <=> $stat{$a}[1] } keys %stat )
         {
             $sum += $stat{$file}[0];
-            if ( $size && $sum > $size ) { unlink $file }
+            if ( $size && $sum > $size ) { push @cruft, $file }
             else { unshift @file, $file }
         }
 
-        unlink splice @file, $count, @file if $count && @file > $count;
+        push @cruft, splice @file, $count, $#file if $count && @file > $count;
     }
-    return $self;
+
+    unlink @cruft if $param{remove};
+    return wantarray ? @cruft : \@cruft;
 }
 
 =head3 convert( $type, $expr )

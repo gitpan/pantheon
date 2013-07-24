@@ -13,7 +13,6 @@ Janus::Sequence::Code - Load maintenence plugin code.
 
 =head1 CODE
 
-Code file is expected to contain a package I<Janus::Plugin>, where I<our>
 B<$STATIC> may be defined with a true value - a hint that I<our> variables
 in this package should have a I<static> effect.
 
@@ -27,6 +26,8 @@ which guarantees order of stage invocations.
 use strict;
 use warnings;
 use Carp;
+
+our $STATIC;
 
 =head1 METHODS
 
@@ -43,7 +44,7 @@ sub load
     confess $error unless -f $code || -l $code;
 
     require $code; ## compile time
-    my %self = ( static => $Janus::Plugin::STATIC );
+    my %self = ( static => $STATIC );
 
     my @code = do $code; ## run time
     confess "$error: $@" if $@;
@@ -96,9 +97,6 @@ sub static
 }
 
 =head1 EXAMPLE
-
- ## this file may have any name, despite the package it contains.
- package Janus::Plugin;
 
  use strict;
  use Data::Dumper;

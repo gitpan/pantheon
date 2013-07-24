@@ -1,13 +1,13 @@
 #!# perl: argos/code/m.http
 use strict;
-use URI::Escape;
 use LWP::UserAgent;
 
 use Vulcan::Grep;
 
 our %PARAM =
 (
-    timeout => 10, port => 80, uri => '/', code => [ 200 ], grep => [],
+    timeout => 10, port => 80, code => [ 200 ],
+    grep => [], uri => '/', proto => 'http',
 );
 
 our %ERROR =
@@ -20,11 +20,10 @@ return sub
 {
     my ( %param, %mesg ) = @_;
     my ( $batch, $param ) = @param{ qw( batch param ) };
-    my ( $port, $uri, $code, $grep, $timeout ) =
-        map { $param->{$_} || $PARAM{$_} } qw( port uri code grep timeout );
+    my ( $proto, $port, $uri, $code, $grep, $timeout ) = map
+        { $param->{$_} || $PARAM{$_} } qw( proto port uri code grep timeout );
 
     map { $_ = [ $_ ] if ref $_ ne 'ARRAY' } $code, $grep;
-    $uri = uri_escape( $uri );
 
     my $ua = LWP::UserAgent->new();
 
@@ -32,15 +31,16 @@ return sub
     $ua->env_proxy;
 
     for my $node ( @$batch )
-    {
-        my $cont;
-        my $re = $ua->get( sprintf '%s:%s%s', $node, $port, $uri );
+    {  
+        my $url = sprintf '%s://%s:%s%s', $proto, $node, $port, $uri;
+        my $re = $ua->get( $url );
         my $rc = $re->code();
-        my $err = ! $re->is_success() ? 'down'
-            : ! grep { $_ == $rc } @$code ? 'code'
-            : ! @$grep ? next
-            : ! ( $cont = $re->decoded_content() ) ? 'null'
-            : ! Vulcan::Grep->new( input => $cont, rule => $grep )->eval()
+
+        my $err = ( ! $re->is_success() ) ? 'down'
+            : ( ! grep { $_ == $rc } @$code ) ? 'code'
+            : ( ! @$grep ) ? next
+            : ( ! ( $url = $re->decoded_content() ) ) ? 'null'
+            : ( ! Vulcan::Grep->new( input => $url, rule => $grep )->eval() )
             ? 'cont' : next;
 
         push @{ $mesg{error}{ $ERROR{$err} } }, $node;
@@ -48,3 +48,4 @@ return sub
 
     return \%mesg;
 };
+

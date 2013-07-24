@@ -1,5 +1,14 @@
 Revision history for pantheon.
 
+0.07    2013.07.22
+        argos/code/m.http - bugfix
+        tools/decruft - new tool
+        Vulcan::Phasic - reduce sleep period
+        Vulcan::Mrsync - reduce log verbosity
+        Vulcan::Cruft - replace Vulcan::RRLogDir
+        Janus::Sequence::Code - deprecate Janus::Plugin
+        update - root ownership for @INSTALL items; new feature --prereq
+
 0.06    2013.07.15
         argos/conf.example/conf.reduce.r.generic 
         tools/range - new feature, accept input from STDIN

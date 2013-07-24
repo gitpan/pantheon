@@ -13,7 +13,7 @@ Version 0.01
 
 =cut
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 =head1 MODULES
 
@@ -108,8 +108,8 @@ A suite of utility modules
  Vulcan::SQLiteDB
  Vulcan::SysInfo
  Vulcan::Symlink
- Vulcan::RRLogDir
  Vulcan::Mrsync
+ Vulcan::Cruft
  Vulcan::Grep
  Vulcan::Sudo
 

@@ -52,10 +52,10 @@ lib/Vulcan/Mrsync.pm
 lib/Vulcan/Daemon.pm
 lib/Vulcan/SQLiteDB.pm
 lib/Vulcan/Logger.pm
-lib/Vulcan/RRLogDir.pm
 lib/Vulcan/DirConf.pm
 lib/Vulcan/Phasic.pm
 lib/Vulcan/OptConf.pm
+lib/Vulcan/Cruft.pm
 lib/Vulcan/ProcLock.pm
 lib/Vulcan/Grep.pm
 lib/Vulcan/SysInfo.pm
@@ -72,6 +72,7 @@ tools/janus/run
 tools/janus/tail
 tools/loop
 tools/.config
+tools/decruft
 tools/range
 tools/sysinfo
 tools/fping-r

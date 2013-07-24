@@ -16,7 +16,7 @@ INSTALLATION
 
 To install this module, run the following commands:
 
-	./update --install /installation/path
+	./update --install /installation/path --prereq
 
 SUPPORT AND DOCUMENTATION
 

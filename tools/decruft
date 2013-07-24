@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+
+use lib '/home/kan/pantheon/lib';
+use strict;
+
+use Vulcan::OptConf;
+use Vulcan::Cruft;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
+
+$| ++;
+
+my %o = Vulcan::OptConf->load()
+    ->get( qw( count=i regex=s size=s age=s remove ) )->dump();
+
+my $cruft = Vulcan::Cruft->new( @ARGV );
+
+=head1 SYNOPSIS
+
+=head3 show cruft
+
+ $0 directories
+
+=head3 remove cruft
+
+ $0 directories --remove
+
+=cut
+my @cruft = $cruft->cruft( %o );
+print join( "\n", sort @cruft ), "\n" if @cruft;
+exit 0;

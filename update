@@ -11,6 +11,7 @@ use Vulcan::OptConf;
 
 $| ++;
 
+our %PREREQ_PM;
 our ( $HIST, $MAKE, $LIST ) = qw( Changes Makefile.PL MANIFEST );
 our $MODULE = basename( $Bin );
 our @INSTALL = qw(
@@ -24,7 +25,7 @@ our @INSTALL = qw(
     argos/code
 );
 
-if ( my %o = Vulcan::OptConf->load()->get( qw( install=s dist ) )->dump() )
+if ( my %o = Vulcan::OptConf->load->get( qw( install=s dist prereq ) )->dump )
 {
     makefile();
     make();
@@ -49,6 +50,13 @@ if ( my %o = Vulcan::OptConf->load()->get( qw( install=s dist ) )->dump() )
     {
         install( $dir );
     }
+
+=head3 install prerequisite modules
+
+ $0 --prereq
+
+=cut
+    prereq() if $o{prereq};
 }
 =head3 update
 
@@ -69,6 +77,13 @@ sub makefile
     exit 1 if system "cd $Bin && perl $MAKE";
 }
 
+sub prereq
+{
+    do $MAKE;
+    exit 1 if grep { system "sudo PERL_MM_USE_DEFAULT=1 cpan $_" }
+        keys %PREREQ_PM;
+}
+
 sub install
 {
     my $dir = shift;
@@ -78,7 +93,8 @@ sub install
 
     make( install => 1 );
     map { $_ = "sudo $_" } $mkdir, $untar unless canwrite( $dir );
-    exit 1 if system( $mkdir ) || system( $tar . $untar );
+    exit 1 if system( $mkdir ) || system( $tar . $untar )
+        || system( "cd $dir && sudo chown -R root:root @INSTALL" );
 }
 
 sub make
@@ -113,7 +129,7 @@ sub manifest
 {
     die $! unless chdir $Bin && open my $handle, '>', $LIST;
     map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST, $Script;
-    print $handle `find lib t @INSTALL -type f`;
+    print $handle `find lib t @INSTALL -type f -not -name .*.swp`;
     close $handle;
 }
 

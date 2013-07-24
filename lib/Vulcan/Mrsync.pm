@@ -68,7 +68,7 @@ ROOT
         my $rsync = my $cmd = $< ? $cmd_user : $cmd_root;
 
         chop $rsync;
-        &{ $param{log} }( $cmd );
+        #&{ $param{log} }( $cmd );
         return system( $rsync ) ? die "ERR: $cmd" : 'OK';
     };
 
