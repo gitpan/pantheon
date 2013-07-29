@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use strict;
 use POSIX;
@@ -6,16 +6,21 @@ use Tie::File;
 use File::Basename;
 use FindBin qw( $Bin $Script );
 
-use lib "$Bin/lib";
+our $PACK = dirname( $Bin );
+our @MODULE = ( split '-', basename( $PACK ) )[0];
+pop @MODULE if $MODULE[-1] =~ /^\d+.+?\d+$/;
+our $MODULE = join( '/', @MODULE ) . '.pm';
+
+use lib "$PACK/lib";
 use Vulcan::OptConf;
 
 $| ++;
 
 our %PREREQ_PM;
-our ( $HIST, $MAKE, $LIST ) = qw( Changes Makefile.PL MANIFEST );
-our $MODULE = basename( $Bin );
+our ( $HIST, $MAKE, $LIST, $CPAN ) = qw( Changes Makefile.PL MANIFEST );
 our @INSTALL = qw(
     tools
+    utils
     poros/code
     daemon/path
     daemon/conf
@@ -25,7 +30,17 @@ our @INSTALL = qw(
     argos/code
 );
 
-if ( my %o = Vulcan::OptConf->load->get( qw( install=s dist prereq ) )->dump )
+my %o = Vulcan::OptConf->load
+    ->get( qw( install=s dist prereq bump=s ) )->dump();
+
+=head3 install prerequisite modules
+
+ $0 --prereq
+
+=cut
+prereq() if $o{prereq};
+
+if ( $o{dist} || $o{install} )
 {
     makefile();
     make();
@@ -37,35 +52,24 @@ if ( my %o = Vulcan::OptConf->load->get( qw( install=s dist prereq ) )->dump )
  $0 --dist
 
 =cut
-    if ( $o{dist} )
-    {
-        make( dist => 0 );
-    } 
+    if ( $o{dist} ) { make( dist => 0 ) } 
 =head3 install
 
  $0 --install /install/path
 
 =cut
-    elsif ( my $dir = $o{install} )
-    {
-        install( $dir );
-    }
-
-=head3 install prerequisite modules
-
- $0 --prereq
-
-=cut
-    prereq() if $o{prereq};
+    else { install( $o{install} ) }
 }
 =head3 update
 
- $0 
+ $0 [--bump minor]
+
+ $0 [--bump major]
 
 =cut
-else
+elsif( ! $o{prereq} )
 {
-    version();
+    version( $o{bump} );
     manifest();
     changes();
 }
@@ -74,19 +78,18 @@ exit 0;
 
 sub makefile
 {
-    exit 1 if system "cd $Bin && perl $MAKE";
+    exit 1 if system "cd $PACK && perl $MAKE";
 }
 
 sub prereq
 {
-    do $MAKE;
-    exit 1 if grep { system "sudo PERL_MM_USE_DEFAULT=1 cpan $_" }
-        keys %PREREQ_PM;
+    do "$PACK/$MAKE";
+    exit 1 if grep { system "$Bin/cpanm --sudo $_" } keys %PREREQ_PM;
 }
 
 sub install
 {
-    my $dir = shift;
+    return unless my $dir = shift;
     my $mkdir = "mkdir -p $dir";
     my $untar = "tar xvf - )";
     my $tar = "tar cf - @INSTALL | ( cd $dir; ";
@@ -109,10 +112,21 @@ sub make
 
 sub version
 {
-    my $path = "$Bin/lib/$MODULE.pm";
+    my $path = "$PACK/lib/$MODULE";
     require $path;
 
-    my $version = eval "\$${MODULE}::VERSION\n";
+    my $bump = shift;
+    my $version = eval '$' . join '::', @MODULE, 'VERSION';
+
+    if ( $bump && ( my @version = $version =~ /(\d+)\.(\d+)/ ) )
+    {
+        if ( lc $bump eq 'minor' ) { $version[-1] ++ }
+        else { $version[-1] =~ s/./0/g; $version[0] ++ }
+
+        system sprintf "perl -pi -e 's/$version/%s/' $path",
+            ( $version = join '.', @version );
+    }
+
     my $time = POSIX::strftime( '%Y.%m.%d', localtime( ( stat $path )[9] ) );
 
     tie my @hist, 'Tie::File', $HIST;
@@ -127,8 +141,8 @@ sub version
 
 sub manifest
 {
-    die $! unless chdir $Bin && open my $handle, '>', $LIST;
-    map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST, $Script;
+    die $! unless chdir $PACK && open my $handle, '>', $LIST;
+    map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST;
     print $handle `find lib t @INSTALL -type f -not -name .*.swp`;
     close $handle;
 }
@@ -140,7 +154,7 @@ sub changes
 
 Be sure that the following are up to date.
 
-    VERSION and MODULES in $MODULE.pm and PREREQ_PM in $MAKE
+    VERSION and MODULES in $MODULE and PREREQ_PM in $MAKE
 
 MEMO
 }

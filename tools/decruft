@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 
 use lib '/home/kan/pantheon/lib';
 use strict;
@@ -17,6 +17,8 @@ my %o = Vulcan::OptConf->load()
 my $cruft = Vulcan::Cruft->new( @ARGV );
 
 =head1 SYNOPSIS
+
+Remove extraneous regular files from directories.
 
 =head3 show cruft
 

@@ -14,9 +14,9 @@ fixes for the module are worth downloading.
 
 INSTALLATION
 
-To install this module, run the following commands:
+To install this module, and its dependencies, run the following command:
 
-	./update --install /installation/path --prereq
+	utils/update --install /installation/path --prereq
 
 SUPPORT AND DOCUMENTATION
 
