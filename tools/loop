@@ -9,6 +9,7 @@ $0 [--interval seconds] [--output file] command ..
 
 =cut
 use strict;
+use warnings;
 
 use Vulcan::OptConf;
 

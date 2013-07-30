@@ -2,9 +2,10 @@
 
 =head1 SYNOPSIS
 
-Munge invocation line for all perl scripts.
+Munge invocation line for all perl scripts in a directories. Default to 
+I<grandparent> dir of this script. --force to bypass path check.
 
- $0 /path/of/perl
+ $0 [directories..] --perl /path/of/perl [--force]
 
 =cut
 use strict;
@@ -12,25 +13,26 @@ use warnings;
 
 use FindBin qw( $Bin );
 use File::Basename;
+use Getopt::Long;
+use Pod::Usage;
 use Tie::File;
 
-exit 1 unless my $perl = shift @ARGV;
-my $path = -l $perl ? readlink $perl : $perl;
+my ( %o, @file );
+Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
+    unless Getopt::Long::GetOptions( \%o, qw( perl=s force ) ) && $o{perl};
 
-exit 1 unless $path =~ /perl/ && -f $path && -x _;
-my $dir = dirname( $Bin );
+my $perl = -l $o{perl} ? readlink $o{perl} : $o{perl};
+exit 1 unless $o{force} || $perl =~ /perl/ && -f $perl && -x _;
+push @ARGV, dirname( $Bin ) unless @ARGV;
 
-for my $file ( `find $dir -type f` )
+for my $file ( `find @ARGV -type f` )
 {
-    my @file;
     chomp $file;
     tie @file, 'Tie::File', $file;
 
-    if ( $file[0] =~ /#!.*?perl(.*$)/ )
-    {
-        $file[0] = "#!$perl$1";
-        warn "$file\n";
-    }
+    next unless @file && $file[0] =~ /#!.*perl(.*$)/o;
+    $file[0] = "#!$o{perl}$1";
+    warn "$file\n";
     untie @file;
 }
 exit 0;

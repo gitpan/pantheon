@@ -6,6 +6,7 @@ Poros proxy
 
 =cut
 use strict;
+use warnings;
 
 use Poros;
 use Vulcan::OptConf;

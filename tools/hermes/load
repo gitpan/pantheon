@@ -8,6 +8,7 @@ Load YAML data into hermes databases.
 
 =cut
 use strict;
+use warnings;
 use YAML::XS;
 
 use Hermes;

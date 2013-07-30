@@ -8,6 +8,7 @@ Delete hermes databases entries
 
 =cut
 use strict;
+use warnings;
 use YAML::XS;
 
 use Hermes;

@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use strict;
+use warnings;
 
 use Hermes;
 use Argos::Path;
@@ -53,12 +54,6 @@ $0 name .. --exclude nodes [ --time 20min ]
 
 =cut
     elsif ( $o{exclude} ) { map { $ctrl->exclude( $_, @info ) } @list }
-
-=head3 exclude/unexclude
-
-$0 name .. --exclude nodes [ --time 20min ]
-
-=cut
 } 
 
 my %stat;

@@ -14,9 +14,13 @@ fixes for the module are worth downloading.
 
 INSTALLATION
 
-To install this module, and its dependencies, run the following command:
+To install for an alternative perl instead of default perl, first run:
 
-	utils/update --install /installation/path --prereq
+    utils/munge --perl /alternative/perl/path
+
+then, to install this module, and its dependencies, run:
+
+    utils/update --install /installation/path --prereq
 
 SUPPORT AND DOCUMENTATION
 

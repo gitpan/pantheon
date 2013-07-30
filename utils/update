@@ -3,6 +3,8 @@
 use strict;
 use POSIX;
 use Tie::File;
+use Pod::Usage;
+use Getopt::Long;
 use File::Basename;
 use FindBin qw( $Bin $Script );
 
@@ -10,9 +12,6 @@ our $PACK = dirname( $Bin );
 our @MODULE = ( split '-', basename( $PACK ) )[0];
 pop @MODULE if $MODULE[-1] =~ /^\d+.+?\d+$/;
 our $MODULE = join( '/', @MODULE ) . '.pm';
-
-use lib "$PACK/lib";
-use Vulcan::OptConf;
 
 $| ++;
 
@@ -30,8 +29,9 @@ our @INSTALL = qw(
     argos/code
 );
 
-my %o = Vulcan::OptConf->load
-    ->get( qw( install=s dist prereq bump=s ) )->dump();
+my %o;
+Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
+    if ! Getopt::Long::GetOptions( \%o, qw( install=s dist prereq bump=s ) );
 
 =head3 install prerequisite modules
 
@@ -39,6 +39,7 @@ my %o = Vulcan::OptConf->load
 
 =cut
 prereq() if $o{prereq};
+cd();
 
 if ( $o{dist} || $o{install} )
 {
@@ -76,9 +77,16 @@ elsif( ! $o{prereq} )
 
 exit 0;
 
+sub cd
+{
+    my $dir = shift || $PACK;
+    chdir $dir;
+    system "cd $dir";
+}
+
 sub makefile
 {
-    exit 1 if system "cd $PACK && perl $MAKE";
+    exit 1 if system "$^X $MAKE";
 }
 
 sub prereq
@@ -123,7 +131,7 @@ sub version
         if ( lc $bump eq 'minor' ) { $version[-1] ++ }
         else { $version[-1] =~ s/./0/g; $version[0] ++ }
 
-        system sprintf "perl -pi -e 's/$version/%s/' $path",
+        system sprintf "$^X -pi -e 's/$version/%s/' $path",
             ( $version = join '.', @version );
     }
 
@@ -141,7 +149,7 @@ sub version
 
 sub manifest
 {
-    die $! unless chdir $PACK && open my $handle, '>', $LIST;
+    die $! unless open my $handle, '>', $LIST;
     map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST;
     print $handle `find lib t @INSTALL -type f -not -name .*.swp`;
     close $handle;

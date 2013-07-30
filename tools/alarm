@@ -6,6 +6,7 @@ alarm number-of-seconds command ..
 
 =cut
 use strict;
+use warnings;
 
 $SIG{ALRM} = sub { warn "timeout!\n"; exit 1 };
 alarm shift @ARGV;

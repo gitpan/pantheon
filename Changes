@@ -1,5 +1,11 @@
 Revision history for pantheon.
 
+0.09    2013.07.29
+        utils/update - bugfix
+        utils/munge - bugfix
+        argos/code/m.http - bugfix
+        tools/* - use warnings 
+
 0.08    2013.07.24
         pantheon - documentation bug fix
         tools/* - change invocation line to /usr/bin/env perl

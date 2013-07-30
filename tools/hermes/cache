@@ -6,6 +6,7 @@ Covert hermes databases to hermes cache
 
 =cut
 use strict;
+use warnings;
 
 use Hermes::Cache;
 use Vulcan::OptConf;

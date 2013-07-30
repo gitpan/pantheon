@@ -7,6 +7,7 @@
 
 =cut
 use strict;
+use warnings;
 use Sys::Hostname;
 
 use Hermes;

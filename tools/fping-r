@@ -6,6 +6,7 @@
 
 =cut
 use strict;
+use warnings;
 
 use Hermes;
 use Vulcan::OptConf;

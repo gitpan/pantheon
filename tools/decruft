@@ -2,6 +2,7 @@
 
 use lib '/home/kan/pantheon/lib';
 use strict;
+use warnings;
 
 use Vulcan::OptConf;
 use Vulcan::Cruft;

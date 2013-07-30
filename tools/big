@@ -10,6 +10,7 @@ Find the biggest file/directory under a path
 
 =cut
 use strict;
+use warnings;
 use POSIX;
 use File::Spec;
 

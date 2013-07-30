@@ -8,6 +8,7 @@ Dump hermes databases to YAML
 
 =cut
 use strict;
+use warnings;
 use YAML::XS;
 
 use Hermes;
