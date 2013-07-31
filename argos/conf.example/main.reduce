@@ -1,6 +1,6 @@
 ---
 error:
-  stat: [ 'error' ]
+  stat: [ '*.error' ]
   tier: 
     - [ 'ops1' ]
     - [ 'ops2' ]

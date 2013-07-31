@@ -143,9 +143,9 @@ Process dumps collected data to I<run> directory. See Argos::Data.
 
     $SIG{TERM} = $SIG{INT} = sub
     {
-        map { $_->kill( 'KILL' )->detach() } threads->list();
         $data->clear();
         $log->say( 'argos: killed.' );
+        map { $_->kill( 'KILL' )->detach() } threads->list();
         exit 1;
     };
 
@@ -170,7 +170,13 @@ Process dumps collected data to I<run> directory. See Argos::Data.
 
     for ( my $now; $now = time; )
     {
-        sleep $SLEEP while $ctrl->stuck( $name );
+        if ( $ctrl->stuck( $name ) )
+        {
+            $data->clear();
+            $log->say( 'map: paused.' );
+            sleep $SLEEP while $ctrl->stuck( $name );
+        }
+
         my ( %exclude, %result ) = map { $_ => 1 } @{ $ctrl->excluded() };
 
         $log->say( 'batch: begin.' );

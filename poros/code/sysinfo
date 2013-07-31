@@ -13,12 +13,33 @@ return sub
     my @argv = @{ $param{argv} };
     my $interval = @argv > 1 ? shift @argv : INTERVAL;
     my $test = shift @argv;
+    my $sar = Vulcan::SysInfo->new( interval => $interval );
 
-    if ( $test && ref $test eq 'HASH' )
+    return 0 unless $test;
+    $test = [ $test ] unless ref $test;
+
+    if ( ref $test eq 'HASH' )
     {
-        my $sar = Vulcan::SysInfo->new( interval => $interval );
-        map { delete $test->{$_} if $sar->eval( $test->{$_} ) } keys %$test;
+        while ( my ( $key, $val ) = each %$test )
+        {
+            $val = [ $val ] unless ref $val;
+    
+            if ( ref $val eq 'ARRAY'
+                && ( my @val = grep { $sar->eval( $_ ) } @$val ) )
+            {
+                $test->{$key} = \@val;
+            }
+            else
+            {
+                delete $test->{$_} 
+            }
+        }
         YAML::XS::DumpFile \*STDOUT, $test if %$test;
+    }
+    elsif ( ref $test eq 'ARRAY'
+        && ( my @val = grep { $sar->eval( $_ ) } @$test ) )
+    {
+        YAML::XS::DumpFile \*STDOUT, \@val;
     }
     return 0;
 };

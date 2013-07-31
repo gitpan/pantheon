@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Argos::Reduce
+use Argos::Reduce;
 use Vulcan::OptConf;
 use Vulcan::Sudo;
 

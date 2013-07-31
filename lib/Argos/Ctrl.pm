@@ -19,7 +19,6 @@ Argos::Ctrl - Controls Argos via a SQLite database
 =cut
 use strict;
 use warnings;
-use Time::HiRes qw( time alarm sleep stat );
 
 use base qw( Vulcan::SQLiteDB );
 
@@ -38,7 +37,7 @@ our ( $TABLE, $EXC, $PAUSE ) = qw( argos exclude pause );
 sub define
 {
     ctrl => 'TEXT NOT NULL',
-    node => 'TEXT NOT NULL',
+    node => 'TEXT NOT NULL PRIMARY KEY',
     time => 'INTEGER NOT NULL',
     info => 'BLOB',
 }
@@ -74,8 +73,11 @@ Return records that cause @watcher to be stuck. Return all records if
 sub stuck
 {
     my $self = shift;
+    my %query = ( node => [ 1, @_ ], ctrl => [ 0, $EXC ] );
+
+    delete $query{node} unless @_;
     $self->expire( $TABLE, time );
-    $self->select( $TABLE, '*', node => [ 1, @_ ], ctrl => [ 0, $EXC ] )
+    $self->select( $TABLE, '*', %query );
 }
 
 =head3 exclude( $node, $time, $info )

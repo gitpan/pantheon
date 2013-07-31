@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration platforms
 
 =cut
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 =head1 MODULES
 

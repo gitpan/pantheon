@@ -42,6 +42,7 @@ sub run
         eval
         {
             local $SIG{ALRM} = sub { die 'timeout' if $batch };
+            local $SIG{KILL} = sub { $batch = []; die 'killed' };
 
             while ( sleep 1 )
             {

@@ -120,7 +120,7 @@ Argos logs activites to STDERR. See Vulcan::Logger.
     for ( my ( %stat, $now ); $now = time; ) ## path => [ timestamp, count ]
     {
         my ( %curr, %due ) = map { $_ => ( stat $_ )[9] } ## path => mtime
-        my @path = map { glob File::Spec->join( $data, "*.$_" ) } @stat;
+        my @path = map { glob File::Spec->join( $data, $_ ) } @stat;
 
         map { $stat{$_} = [ $now, -1 ] unless $stat{$_} } @path; ## new
 

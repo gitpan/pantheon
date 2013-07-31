@@ -1,5 +1,16 @@
 Revision history for pantheon.
 
+0.10    2013.07.31
+        Janus::Ctrl - bugfix
+        Argos::Ctrl - bugfix
+        Argos::Map - bugfix
+        Argos::Code::Map - bugfix
+        Argos::Reduce - stat supports wildcard
+        argos/conf.example/main.reduce - wildcard in stat
+        tools/argos/reduce - bugfix
+        tools/argos/ctrl - bugfix
+        poros/code/sysinfo - new feature, supports ARRAY of tests
+
 0.09    2013.07.29
         utils/update - bugfix
         utils/munge - bugfix

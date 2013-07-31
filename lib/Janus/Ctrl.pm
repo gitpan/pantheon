@@ -38,7 +38,7 @@ sub define
 {
     name => 'TEXT NOT NULL',
     ctrl => 'TEXT NOT NULL',
-    node => 'TEXT NOT NULL',
+    node => 'TEXT NOT NULL PRIMARY KEY',
     info => 'BLOB';
 };
 
