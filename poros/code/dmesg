@@ -8,6 +8,8 @@ use Vulcan::Grep;
 
 return sub
 {
+    local $/ = "\n";
+
     my %param = @_;
     my ( $test ) = @{ $param{argv} };
 

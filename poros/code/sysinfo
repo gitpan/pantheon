@@ -12,34 +12,28 @@ return sub
     my %param = @_;
     my @argv = @{ $param{argv} };
     my $interval = @argv > 1 ? shift @argv : INTERVAL;
-    my $test = shift @argv;
-    my $sar = Vulcan::SysInfo->new( interval => $interval );
 
-    return 0 unless $test;
-    $test = [ $test ] unless ref $test;
-
-    if ( ref $test eq 'HASH' )
+    if ( my $test = shift @argv )
     {
-        while ( my ( $key, $val ) = each %$test )
+        my $sar = Vulcan::SysInfo->new( interval => $interval );
+        my $eval = sub
         {
-            $val = [ $val ] unless ref $val;
-    
-            if ( ref $val eq 'ARRAY'
-                && ( my @val = grep { $sar->eval( $_ ) } @$val ) )
+            my $test = shift;
+            my @test = grep { $sar->eval( $_ ) } ref $test ? @$test : $test;
+            return @test ? \@test : undef;
+        };
+
+        if ( ref $test eq 'HASH' )
+        {
+            while ( my ( $key, $val ) = each %$test )
             {
-                $test->{$key} = \@val;
+                if ( $val = &$eval( $val ) ) { $test->{$key} = $val }
+                else { delete $test->{$key} }
             }
-            else
-            {
-                delete $test->{$_} 
-            }
+            $test = undef unless %$test;
         }
-        YAML::XS::DumpFile \*STDOUT, $test if %$test;
-    }
-    elsif ( ref $test eq 'ARRAY'
-        && ( my @val = grep { $sar->eval( $_ ) } @$test ) )
-    {
-        YAML::XS::DumpFile \*STDOUT, \@val;
+        else { $test = &$eval( $test ) }
+        YAML::XS::DumpFile \*STDOUT, $test if $test;
     }
     return 0;
 };

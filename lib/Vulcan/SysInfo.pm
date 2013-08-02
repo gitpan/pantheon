@@ -24,6 +24,7 @@ our $REGEX = qr/\{ (\w+) \}\{ ([^{}]+) \}\{ ([^{}]+) \}/x;
 
 sub new
 {
+    local $/ = "\n";
     my ( $class, %self ) = splice @_;
     my @stat =
     (
@@ -52,10 +53,10 @@ sub new
 
     for ( '-l', '-i' ) ## df: size and inode
     {
-        for ( map { [ ( split /\s+/, $_, 7 )[ 5, 1..4 ] ] } `df $_` )
+        for my $df ( map { [ ( split /\s+/, $_, 7 )[ 5, 1..4 ] ] } `df $_` )
         {
-            map { $_ = $1 if $_ =~ /(\d+)%/ } @$_;
-            push @data, $_;
+            map { $_ = $1 if $_ =~ /(\d+)%/ } @$df;
+            push @data, $df;
         }
 
         $data[0][0] = 'DF';
@@ -142,13 +143,12 @@ sub eval
 
     while ( $test =~ /$REGEX/g )
     {
-        return $test unless my $value = $metric->{$1}{$2};
-        return $test unless my $index = $legend->{$1}{$3};
-        return $test unless defined ( $value = $value->[$index] );
+        return undef unless my $value = $metric->{$1}{$2};
+        return undef unless my $index = $legend->{$1}{$3};
+        return undef unless defined ( $value = $value->[$index] );
 
         $test =~ s/$REGEX/$value/;
     }
-
     return eval $test ? $test : undef;
 }
 

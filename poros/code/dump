@@ -1,0 +1,29 @@
+#!# perl:poros:dump
+
+use strict;
+use warnings;
+use File::Temp;
+use Digest::MD5;
+
+return sub
+{
+    my %param = @_;
+    my %file = @{ $param{argv} };
+    my $path = delete $file{path};
+    my ( $fh, $temp ) = File::Temp::tempfile();
+    my $unlink = sub { unlink shift; return 1 };
+
+    return 1 unless defined $file{md5} && $path && $fh && length $file{file};
+    return 1 if $file{chown} && ! ( my @pw = getpwnam $file{chown} );
+
+    print $fh $file{file};
+    seek $fh, 0, 0;
+    my $md5 = Digest::MD5->new()->addfile( $fh )->hexdigest;
+    close $fh;
+
+    return &$unlink( $temp ) if $md5 ne $file{md5};
+    return &$unlink( $temp ) unless rename $temp, $path;
+    return &$unlink( $path ) if $file{chmod} && ! chmod oct $file{chmod}, $path;
+    return &$unlink( $path ) if @pw && !  chown @pw[2,3], $path;
+    return 0;
+};

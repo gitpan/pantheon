@@ -15,19 +15,8 @@ our $MODULE = join( '/', @MODULE ) . '.pm';
 
 $| ++;
 
-our %PREREQ_PM;
-our ( $HIST, $MAKE, $LIST, $CPAN ) = qw( Changes Makefile.PL MANIFEST );
-our @INSTALL = qw(
-    tools
-    utils
-    poros/code
-    daemon/path
-    daemon/conf
-    janus/main/path
-    argos/main/path
-    argos/conf.example
-    argos/code
-);
+our ( %PREREQ_PM, @INSTALL );
+our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST .install );
 
 my %o;
 Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
@@ -39,7 +28,7 @@ Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
 
 =cut
 prereq() if $o{prereq};
-cd();
+load();
 
 if ( $o{dist} || $o{install} )
 {
@@ -77,11 +66,13 @@ elsif( ! $o{prereq} )
 
 exit 0;
 
-sub cd
+sub load
 {
-    my $dir = shift || $PACK;
-    chdir $dir;
-    system "cd $dir";
+    chdir $PACK;
+    system "cd $PACK";
+
+    @INSTALL = `cat $INST`; 
+    chomp @INSTALL;
 }
 
 sub makefile
@@ -98,6 +89,8 @@ sub prereq
 sub install
 {
     return unless my $dir = shift;
+    return unless @INSTALL;
+
     my $mkdir = "mkdir -p $dir";
     my $untar = "tar xvf - )";
     my $tar = "tar cf - @INSTALL | ( cd $dir; ";
@@ -150,7 +143,7 @@ sub version
 sub manifest
 {
     die $! unless open my $handle, '>', $LIST;
-    map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST;
+    map { print $handle "$_\n" } 'README', $HIST, $MAKE, $LIST, $INST;
     print $handle `find lib t @INSTALL -type f -not -name .*.swp`;
     close $handle;
 }

@@ -1,5 +1,18 @@
 Revision history for pantheon.
 
+0.11    2013.08.01
+        Vulcan::SysInfo - bug fix
+        Vulcan::OptConf - bug fix
+        tools/poros/client - new feature, argv plugin
+        poros/code/sysinfo - code reduction, no functional change
+        poros/code/dump - new plugin
+        poros/code/dmesg - bugfix
+        poros/path - default poros path config
+        poros/argv/* - argv plugins
+        utils/update - externalize installation list
+        .install - installation list
+        tools/.config - poros argv
+
 0.10    2013.07.31
         Janus::Ctrl - bugfix
         Argos::Ctrl - bugfix

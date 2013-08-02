@@ -144,7 +144,7 @@ sub macro
         $path =~ s/\${ROOT}/$ROOT/g;
     }
 
-    return Cwd::abs_path( $path );
+    return $path;
 };
 
 1;
