@@ -1,0 +1,85 @@
+#!/usr/bin/env perl
+
+use strict;
+use POSIX;
+use Tie::File;
+use File::Basename;
+use FindBin qw( $Bin $Script );
+
+our @MODULE = ( split '-', basename( $Bin ) )[0];
+pop @MODULE if $MODULE[-1] =~ /^\d+.+?\d+$/;
+our $MODULE = join( '/', @MODULE ) . '.pm';
+
+$| ++;
+
+our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST INSTALL );
+
+=head3 update
+
+ $0 [minor|major]
+
+=cut
+chdir $Bin;
+system "cd $Bin";
+
+version();
+manifest();
+changes();
+
+exit 0;
+
+sub version
+{
+    my $path = "$Bin/lib/$MODULE";
+    require $path;
+    my $version = eval '$' . join '::', @MODULE, 'VERSION';
+
+    if ( @ARGV && ( my @version = $version =~ /(\d+)\.(\d+)/ ) )
+    {
+        my $bump = lc shift @ARGV;
+
+        if ( $bump =~ /minor/ ) { $version[-1] ++ }
+        elsif ( $bump =~ /major/ ) { $version[-1] =~ s/./0/g; $version[0] ++ }
+
+        system sprintf "$^X -pi -e 's/$version/%s/' $path",
+            ( $version = join '.', @version );
+    }
+
+    my $time = POSIX::strftime( '%Y.%m.%d', localtime( ( stat $path )[9] ) );
+
+    tie my @hist, 'Tie::File', $HIST;
+    for ( my $i = 0; $i < @hist; $i ++ )
+    {
+        next unless $hist[$i] =~ /^(\d+\S+)/;
+        last if $1 eq $version;
+        splice @hist, $i, 0, "$version    $time\n\n"; last;
+    }
+    untie @hist;
+}
+
+sub manifest
+{
+
+    die $! unless open my $handle, '>', $LIST;
+    map { print $handle "$_\n" }
+        'README', $HIST, $MAKE, $LIST, $INST, "$INST.PL", $Script;
+
+    if ( my @install = `cat $INST` )
+    {
+        chomp @install;
+        print $handle `find lib t @install -type f -not -name .*.swp`;
+    }
+    close $handle;
+}
+
+sub changes
+{
+    system "vi $HIST && cat $LIST"; ## update changes
+    warn << "MEMO";
+
+Be sure that the following are up to date.
+
+    VERSION and MODULES in $MODULE and PREREQ_PM in $MAKE
+
+MEMO
+}

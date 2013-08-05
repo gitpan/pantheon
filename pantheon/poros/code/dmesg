@@ -1,4 +1,4 @@
-#!# perl:poros:dmesg
+### perl: poros/code/dmesg
 
 use strict;
 use warnings;

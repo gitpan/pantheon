@@ -1,4 +1,4 @@
-#!# perl: argos/code/m.http
+### perl: argos/code/m.http
 use strict;
 use LWP::UserAgent;
 
@@ -34,7 +34,7 @@ return sub
     {  
         $node .= ":$port" if $node !~ /:\d+$/;
 
-        my $url = "$proto://$port$uri";
+        my $url = "$proto://$node$uri";
         my $re = $ua->get( $url );
         my $rc = $re->code();
 

@@ -18,7 +18,6 @@ WriteMakefile
     AUTHOR        => 'Kan Liu <kan@cpan.org>',
     VERSION_FROM  => 'lib/pantheon.pm',
     ABSTRACT_FROM => 'lib/pantheon.pm',
-    PL_FILES      => {},
     PREREQ_PM     => \%PREREQ_PM, 
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean         => { FILES => 'pantheon-*' },

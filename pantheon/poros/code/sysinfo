@@ -1,4 +1,4 @@
-#!# perl:poros:sysinfo
+### perl: poros/code/sysinfo
 
 use strict;
 use warnings;

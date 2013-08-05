@@ -5,12 +5,24 @@ use warnings;
 
 =head1 NAME
 
-pantheon - A suite of cluster administration platforms
+pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 =head1 MODULES
+
+=head3 Hermes
+
+A cluster information management platform
+
+ Hermes
+ Hermes::Range
+ Hermes::KeySet
+ Hermes::Cache
+ Hermes::Call
+ Hermes::DBI::Cache
+ Hermes::DBI::Root
 
 =head3 Argos
 
@@ -28,26 +40,6 @@ A monitoring platform
  Argos::Code::Batch
  Argos::Code::Map
  Argos::Code::Reduce
-
-=head3 Ceres
-
-A data collection platform
-
- Ceres::Sndr
- Ceres::Rcvr
- Ceres::DBI::Index
-
-=head3 Hermes
-
-A cluster information management platform
-
- Hermes
- Hermes::Range
- Hermes::KeySet
- Hermes::Cache
- Hermes::Call
- Hermes::DBI::Cache
- Hermes::DBI::Root
 
 =head3 Janus
 
@@ -69,6 +61,14 @@ Multiplexed IO
  MIO::CMD
  MIO::TCP
 
+=head3 Poros
+
+A plugin execution platform
+
+ Poros
+ Poros::Path
+ Poros::Query
+
 =head3 Pan
 
 A configuration management platform
@@ -82,13 +82,13 @@ A configuration management platform
  Pan::Transform
  Pan::Util
 
-=head3 Poros
+=head3 Ceres
 
-A plugin execution platform
+A data collection platform
 
- Poros
- Poros::Path
- Poros::Query
+ Ceres::Sndr
+ Ceres::Rcvr
+ Ceres::DBI::Index
 
 =head3 Vulcan
 

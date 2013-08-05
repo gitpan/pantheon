@@ -1,4 +1,4 @@
-#!# perl:poros:janus
+### perl: poros/code/janus
 
 use strict;
 use warnings;

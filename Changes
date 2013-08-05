@@ -1,5 +1,12 @@
 Revision history for pantheon.
 
+0.12    2013.08.05
+        argos/code/m.http - bugfix
+        utils/* - removed
+        install.PL - automatic installation of scripts
+        install - replace .install
+        update - replace utils/update
+
 0.11    2013.08.01
         Vulcan::SysInfo - bug fix
         Vulcan::OptConf - bug fix

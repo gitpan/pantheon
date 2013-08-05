@@ -1,4 +1,4 @@
-#!# perl:poros:dump
+### perl: poros/code/dump
 
 use strict;
 use warnings;

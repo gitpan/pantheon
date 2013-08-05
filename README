@@ -14,13 +14,10 @@ fixes for the module are worth downloading.
 
 INSTALLATION
 
-To install for an alternative perl instead of default perl, first run:
+To install this module, and its dependencies, run:
 
-    utils/munge --perl /alternative/perl/path
-
-then, to install this module, and its dependencies, run:
-
-    utils/update --install /installation/path --prereq
+    perl Makefile.PL
+    PANTHEON=/pantheon/path MUNGE_PERL=1 make install
 
 SUPPORT AND DOCUMENTATION
 

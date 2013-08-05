@@ -1,4 +1,4 @@
-#!# perl: argos/code/b.generic
+### perl: argos/code/b.generic
 use strict;
 
 use Hermes;

@@ -1,4 +1,4 @@
-#!# perl:poros:argv:dump
+### perl: poros/argv/dump
 
 use strict;
 use warnings;

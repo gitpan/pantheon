@@ -1,5 +1,5 @@
 {
-   "abstract" : "A suite of cluster administration platforms",
+   "abstract" : "A suite of cluster administration tools and platforms",
    "author" : [
       "Kan Liu <kan@cpan.org>"
    ],
@@ -41,5 +41,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.11"
+   "version" : "0.12"
 }

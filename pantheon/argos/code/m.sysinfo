@@ -1,4 +1,4 @@
-#!# perl: argos/code/m.sysinfo
+### perl: argos/code/m.sysinfo
 use strict;
 
 use Hermes;
