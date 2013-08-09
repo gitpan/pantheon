@@ -43,7 +43,7 @@ for my $input ( YAML::XS::Load( <> ) )
 
     while ( my ( $cluster, $input ) = each %$input )
     {
-        next if %$filter && ! ( my $filter = $filter->{$cluster} );
+        next unless my $filter = %$filter ? $filter->{$cluster} : {};
 
         my $db = Hermes::DBI::Root
             ->new( File::Spec->join( $o{root}, $cluster ) );

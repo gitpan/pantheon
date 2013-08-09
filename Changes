@@ -1,5 +1,11 @@
 Revision history for pantheon.
 
+0.14    2013.08.12
+        Hermes - new feature, callback supports regex
+        Hermes::Call - new feature, callback supports regex
+        pantheon/tools/hermes/dump - bug fix
+        pantheon/argos/code/m.http - new features, resolve hostname, debug
+
 0.13    2013.08.06
         install.PL - new feature
         pantheon/tools/hermes/dump - interface change

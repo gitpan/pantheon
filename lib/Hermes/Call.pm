@@ -46,25 +46,18 @@ sub new
 
 =head1 METHODS
 
-=head3 run( $name, @cond )
+=head3 run( $name )
 
-Run callback I<$name>, then select results by I<@cond>, if any. The first
-value in @cond indicates positive or negative selection. The rest of @cond
-are keys by which to select.
-
-All values are selected if no @cond is given.
+Run callback I<$name>. Returns results.
 
 =cut
 sub run
 {
     my ( $self, $name ) = splice @_, 0, 2;
-    return () unless my $code = $self->{$name};
+    return {} unless my $code = $self->{$name};
 
-    my $result = &$code() || {};
-    return () unless ref $result eq 'HASH';
-
-    delete @$result{ splice @_ } unless shift @_;
-    grep { $_ && ref $_ eq 'ARRAY' } @_ ? @$result{@_} : values %$result;
+    my $result = &$code();
+    return ref $result eq 'HASH' ? $result : {};
 }
 
 1;

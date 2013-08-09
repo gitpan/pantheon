@@ -113,9 +113,32 @@ sub call
     my $name = $self->incr->token;
     my $cond = $self->incr->token( 'close' ) ? [] : $self->query_cond;
 
-    $cond = [] unless $cond && ref $cond;
     return $result unless my $cb = $self->{cb};
-    return $result->load( [ map { @$_ } $cb->run( $name, @$cond ) ] );
+    $cond = [] unless $cond && ref $cond;
+
+    my ( $match, @val ) = shift @$cond;
+    $cb = $cb->run( $name );
+
+    unless ( @$cond )
+    {
+        @val = values %$cb;
+    }
+    elsif ( ref ( my $regex = $cond->[0] ) )
+    {
+        my @key = $match
+            ? grep { $_ =~ $regex } keys %$cb
+            : grep { $_ !~ $regex } keys %$cb;
+
+        @val = @$cb{ @key };
+    }
+    else
+    {
+        @val = delete @$cb{ @$cond };
+        @val = values %$cb unless $match;
+    }
+
+    @val = map { @$_ } grep { $_ && ref $_ eq 'ARRAY' } @val;
+    return $result->load( \@val );
 }
 
 =head3 cluster
@@ -150,18 +173,24 @@ sub cluster
 sub query_cond
 {
     my ( $self, $col ) = splice @_;
+
     die unless my $op = $self->op( QUERY => 1 );
     return $op if $op eq 'select';
 
-    if ( defined $col && $self->token( 'regex' ) )
+    my $match = $op eq 'in';
+
+    if ( $self->token( 'regex' ) )
     {
         my $regex = $self->match();
-        return [ ( $op eq 'in' ), 
-            grep { $_ =~ $regex } map { @$_ } $self->{db}->select( $col ) ];
+        return
+        [
+            $match, defined $col ?
+            grep { $_ =~ $regex } map { @$_ } $self->{db}->select( $col ) : $regex
+        ];
     }
 
     my $range = $self->expr;
-    return $range->has( '*' ) ? undef : [ ( $op eq 'in' ), $range->list ];
+    return $range->has( '*' ) ? undef : [ $match, $range->list ];
 }
 
 1;

@@ -20,8 +20,9 @@ return sub
 {
     my ( %param, %mesg ) = @_;
     my ( $batch, $param ) = @param{ qw( batch param ) };
-    my ( $proto, $port, $uri, $code, $grep, $timeout ) = map
-        { $param->{$_} || $PARAM{$_} } qw( proto port uri code grep timeout );
+    my ( $proto, $port, $uri, $code, $grep, $timeout, $debug, $resolve ) =
+        map { $param->{$_} || $PARAM{$_} }
+        qw( proto port uri code grep timeout debug resolve );
 
     map { $_ = [ $_ ] if ref $_ ne 'ARRAY' } $code, $grep;
 
@@ -32,11 +33,19 @@ return sub
 
     for my $node ( @$batch )
     {  
-        $node .= ":$port" if $node !~ /:\d+$/;
+        my ( $n, $p ) = split ':', $node;
+
+        $p ||= $port;
+        $n = inet_ntoa( scalar gethostbyname( $n ) )
+            if $resolve && $n !~ /\d+\.\d+\.\d+\.\d+/;
+
+        $node = "$n:$p";
 
         my $url = "$proto://$node$uri";
         my $re = $ua->get( $url );
         my $rc = $re->code();
+
+        print "$url\n" if $debug;
 
         my $err = ( ! $re->is_success() ) ? 'down'
             : ( ! grep { $_ == $rc } @$code ) ? 'code'
