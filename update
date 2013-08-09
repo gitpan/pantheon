@@ -59,16 +59,14 @@ sub version
 
 sub manifest
 {
-
     die $! unless open my $handle, '>', $LIST;
     map { print $handle "$_\n" }
         'README', $HIST, $MAKE, $LIST, $INST, "$INST.PL", $Script;
 
-    if ( my @install = `cat $INST` )
-    {
-        chomp @install;
-        print $handle `find lib t @install -type f -not -name .*.swp`;
-    }
+    my @list = -f $INST ? `cat $INST` : ();
+    chomp @list, 
+
+    print $handle map { `find $_ -type f -not -name .*.swp` } qw( lib t ), @list;
     close $handle;
 }
 

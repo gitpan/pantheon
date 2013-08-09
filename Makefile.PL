@@ -20,6 +20,6 @@ WriteMakefile
     ABSTRACT_FROM => 'lib/pantheon.pm',
     PREREQ_PM     => \%PREREQ_PM, 
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean         => { FILES => 'pantheon-*' },
+    clean         => { FILES => [ qw( pantheon-* INSTALL.in INSTALL.ex ) ] },
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002 ? ( LICENSE => 'perl' ) : () ),
 );

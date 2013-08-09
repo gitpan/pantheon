@@ -4,7 +4,7 @@
 
 Load YAML data into hermes databases.
 
- $0 [input-file] [--quiet]
+ $0 [input-file] [--quiet] [--filter '{cluster1: [table1,table2], ..}']
 
 =cut
 use strict;
@@ -23,8 +23,16 @@ $/ = undef;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
-my %o = Vulcan::OptConf->load()->get( qw( quiet ) )->dump();
+my %o = Vulcan::OptConf->load()->get( qw( quiet filter=s ) )->dump();
 my $range = Hermes->new();
+my $filter = $o{filter} ? YAML::XS::Load $o{filter} : {};
+
+while ( my ( $cluster, $table ) = each %$filter )
+{
+    my $ref = ref $table;
+    $table = $ref ? next : [ $table ] if $ref ne 'ARRAY';
+    $filter->{$cluster} = { map { $_ => 1 } @$table };
+}
 
 for my $input ( YAML::XS::Load( <> ) )
 {
@@ -35,11 +43,15 @@ for my $input ( YAML::XS::Load( <> ) )
 
     while ( my ( $cluster, $input ) = each %$input )
     {
+        next if %$filter && ! ( my $filter = $filter->{$cluster} );
+
         my $db = Hermes::DBI::Root
             ->new( File::Spec->join( $o{root}, $cluster ) );
 
         while ( my ( $table, $input ) = each %$input )
         {
+            next if %$filter && ! $filter->{$table};
+
             warn "$cluster: $table\n" unless $o{quiet};
             $db->create( $table );
 

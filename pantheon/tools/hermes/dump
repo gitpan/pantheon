@@ -4,7 +4,7 @@
 
 Dump hermes databases to YAML
 
- $0 [output-file] [--compress] [--list] [--cluster cluster-range]
+ $0 clusters [--output output-file] [--compress] [--list]
 
 =cut
 use strict;
@@ -20,13 +20,13 @@ $| ++;
 $Vulcan::OptConf::THIS = 'hermes';
 
 my $option = Vulcan::OptConf->load();
-my %o = $option->get( qw( list compress cluster=s ) )->dump();
+my %o = $option->get( qw( list compress output=s ) )->dump();
 my $range = Hermes->new( $option->dump( 'range' ) );
 my ( $root, @data, %data, @empty ) = delete $o{root};
 
 die "cannot chdir $root" unless chdir $root;
 
-for my $cluster ( $o{cluster} ? $range->load( $o{cluster} )->list : glob '*' )
+for my $cluster ( @ARGV ? map { $range->load( $_ )->list } @ARGV : glob '*' )
 {
     my $db = File::Spec->join( $root, $cluster );
     my %datum;
@@ -58,7 +58,7 @@ for my $cluster ( $o{cluster} ? $range->load( $o{cluster} )->list : glob '*' )
     else { $data{$cluster} = $datum{$cluster} }
 }
 
-YAML::XS::DumpFile( shift || \*STDOUT, $o{list} ? @data : \%data );
+YAML::XS::DumpFile( $o{output} || \*STDOUT, $o{list} ? @data : \%data );
 
 warn sprintf "\nEmpty clusters ( possibly cruft ):\n\n%s\n\n",
     $range->load( \@empty )->dump() if @empty;

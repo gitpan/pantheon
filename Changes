@@ -1,11 +1,16 @@
 Revision history for pantheon.
 
+0.13    2013.08.06
+        install.PL - new feature
+        pantheon/tools/hermes/dump - interface change
+        pantheon/tools/hermes/load - new feature, --filter
+
 0.12    2013.08.05
         argos/code/m.http - bugfix
         utils/* - removed
-        install.PL - automatic installation of scripts
-        install - replace .install
-        update - replace utils/update
+        INSTALL.PL - automatic installation of scripts
+        INSTALL - replace .install
+        update - replace utils/update, functionally regressed to v0.04.
 
 0.11    2013.08.01
         Vulcan::SysInfo - bug fix
