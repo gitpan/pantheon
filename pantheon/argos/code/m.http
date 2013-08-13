@@ -51,7 +51,7 @@ return sub
             : ( ! grep { $_ == $rc } @$code ) ? 'code'
             : ( ! @$grep ) ? next
             : ( ! ( $url = $re->decoded_content() ) ) ? 'null'
-            : ( ! @{ Vulcan::Grep->new( input => $url, rule => $grep )->eval } )
+            : ( ! Vulcan::Grep->new( input => $url, rule => $grep )->eval )
             ? 'cont' : next;
 
         push @{ $mesg{error}{ $ERROR{$err} } }, $node;

@@ -8,3 +8,5 @@ pantheon/janus/main/path
 pantheon/argos/main/path
 pantheon/argos/conf.example
 pantheon/argos/code
+#pantheon/lib
+#pantheon/search

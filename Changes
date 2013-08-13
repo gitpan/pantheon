@@ -1,5 +1,14 @@
 Revision history for pantheon.
 
+0.15    2013.08.12
+        Vulcan::Grep - new feature
+        pantheon/argos/code/m.grep - new plugin
+        pantheon/argos/code/m.http - minor enhancement
+        pantheon/argos/code/m.sysinfo - decruft
+        pantheon/poros/code/grep - new plugin, replace dmesg
+        update - integrate INSTALL.PL
+        INSTALL.PL - integrated
+
 0.14    2013.08.12
         Hermes - new feature, callback supports regex
         Hermes::Call - new feature, callback supports regex
@@ -19,8 +28,8 @@ Revision history for pantheon.
         update - replace utils/update, functionally regressed to v0.04.
 
 0.11    2013.08.01
-        Vulcan::SysInfo - bug fix
-        Vulcan::OptConf - bug fix
+        Vulcan::SysInfo - bugfix
+        Vulcan::OptConf - bugfix
         tools/poros/client - new feature, argv plugin
         poros/code/sysinfo - code reduction, no functional change
         poros/code/dump - new plugin

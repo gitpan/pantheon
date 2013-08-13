@@ -9,6 +9,7 @@ our %PREREQ_PM =
     'threads' => 1.80,
     'YAML::XS' => 0.41,
     'DBD::SQLite' => 1.37,
+    'Getopt::Long' => 2.38,
     'Thread::Queue' => 2.12,
 );
 
@@ -20,6 +21,6 @@ WriteMakefile
     ABSTRACT_FROM => 'lib/pantheon.pm',
     PREREQ_PM     => \%PREREQ_PM, 
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean         => { FILES => [ qw( pantheon-* INSTALL.in INSTALL.ex ) ] },
+    clean         => { FILES => [ qw( pantheon-* *.in *.ex ) ] },
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002 ? ( LICENSE => 'perl' ) : () ),
 );

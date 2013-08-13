@@ -1,14 +1,12 @@
 #!/usr/bin/env perl
 
 use strict;
+use warnings;
+
 use POSIX;
 use Tie::File;
 use File::Basename;
 use FindBin qw( $Bin $Script );
-
-our @MODULE = ( split '-', basename( $Bin ) )[0];
-pop @MODULE if $MODULE[-1] =~ /^\d+.+?\d+$/;
-our $MODULE = join( '/', @MODULE ) . '.pm';
 
 $| ++;
 
@@ -20,19 +18,23 @@ our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST INSTALL );
 
 =cut
 chdir $Bin;
-system "cd $Bin";
 
-version();
-manifest();
-changes();
+my $manifest = Manifest->new( $INST );
+my $module = basename( $Bin ); $module =~ s/-[\d.]+$//g;
 
-exit 0;
-
-sub version
+if ( @ARGV && $ARGV[0] eq $INST )
 {
-    my $path = "$Bin/lib/$MODULE";
+    $manifest->munge( $ENV{MUNGE_PERL} )->install( $ENV{ uc $module } );
+}
+else
+{
+    ## version
+    my @module = split '-', $module;
+    my $module = join( '/', @module ) . '.pm';
+    my $path = "$Bin/lib/$module";
+
     require $path;
-    my $version = eval '$' . join '::', @MODULE, 'VERSION';
+    my $version = eval '$' . join '::', @module, 'VERSION';
 
     if ( @ARGV && ( my @version = $version =~ /(\d+)\.(\d+)/ ) )
     {
@@ -55,29 +57,116 @@ sub version
         splice @hist, $i, 0, "$version    $time\n\n"; last;
     }
     untie @hist;
-}
 
-sub manifest
-{
+    ## manifest
     die $! unless open my $handle, '>', $LIST;
     map { print $handle "$_\n" }
         'README', $HIST, $MAKE, $LIST, $INST, "$INST.PL", $Script;
 
-    my @list = -f $INST ? `cat $INST` : ();
-    chomp @list, 
-
-    print $handle map { `find $_ -type f -not -name .*.swp` } qw( lib t ), @list;
+    print $handle map { `find $_ -type f -not -name .*.swp` }
+        qw( lib t ), $manifest->list();
     close $handle;
-}
 
-sub changes
-{
+    ## changes
     system "vi $HIST && cat $LIST"; ## update changes
     warn << "MEMO";
 
 Be sure that the following are up to date.
 
-    VERSION and MODULES in $MODULE and PREREQ_PM in $MAKE
+    VERSION and MODULES in $module and PREREQ_PM in $MAKE
 
 MEMO
 }
+
+exit 0;
+
+package Manifest;
+
+sub new
+{
+    my ( $class, $inst ) = splice @_;
+    my ( %list, @list ) = ( ex => {}, in => {} );
+
+    if ( $inst && open my $fh => $inst )
+    {
+        for my $path ( <$fh> )
+        {
+            $path =~ s/#.*//;
+            $path =~ s/^\s*//;
+            $path =~ s/\s*$//;
+    
+            next if $path =~ /^$/;
+    
+            my $list = $path =~ s/^-\s*// ? $list{ex} : $list{in};
+            map { $list->{$_} = 1 } glob $path;
+        }
+    
+        close $fh;
+        map { delete $list{in}{$_} if $list{in}{$_} } keys %{ $list{ex} };
+    
+        for my $ext ( qw( in ex ) )
+        {
+            my @list = sort keys %{ $list{$ext} };
+            open my $handle, '>', join '.', $inst , $ext;
+            print $handle join( "\n", @list ), "\n";
+            close $handle;
+    
+            $list{$ext} = \@list;
+        }
+    
+        @list = @{ $list{in} };
+        chomp @list;
+    }
+
+    bless { inst => $inst, list => \@list }, ref $class || $class;
+}
+
+sub list
+{
+    my $self = shift;
+    return wantarray ? @{ $self->{list} } : $self->{list};
+}
+
+sub inst
+{
+    my $self = shift;
+    return $self->{inst};
+}
+
+sub install
+{
+    my $self = shift;
+    my $inst = $self->inst();
+
+    return $self unless my $dir = shift;
+    return $self unless my @list = $self->list();
+
+    $inst = "tar -T ${inst}.in -X ${inst}.ex -cf - | \( cd $dir && tar xvf - \)";
+
+    warn "$inst\n";
+    system "mkdir -p $dir && $inst";
+    map { system "cd $dir && sudo chown -R root:root $_" } @list;
+    return $self;
+}
+
+sub munge
+{
+    my $self = shift;
+
+    return $self unless shift;
+    warn "Munging invocation perl path to $^X ..\n";
+
+    for my $file ( map { `find $_ -type f` } $self->list() )
+    {
+        chomp $file;
+        tie my ( @file ), 'Tie::File', $file;
+
+        next unless @file && $file[0] =~ /#![^#]*perl(.*$)/o;
+        $file[0] = "#!$^X$1";
+        warn "$file\n";
+        untie @file;
+    }
+    return $self;
+}
+
+1;

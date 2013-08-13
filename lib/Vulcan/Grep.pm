@@ -57,7 +57,8 @@ sub new
 
 =head3 eval()
 
-Return matched input.
+Return matched input. In list context return array of matched input. In scalar
+context return array reference of matchecd input, if any, undef otherwise.
 
 =cut
 sub eval
@@ -75,7 +76,7 @@ sub eval
             push @match, $input;
         }
     }
-    return wantarray ? @match : \@match;
+    return wantarray ? @match : @match ? \@match : undef;
 }
 
 1;

@@ -66,6 +66,24 @@ t/manifest.t
 t/boilerplate.t
 t/pod.t
 t/00-load.t
+pantheon/argos/code/m.http
+pantheon/argos/code/m.sysinfo
+pantheon/argos/code/m.grep
+pantheon/argos/code/b.generic
+pantheon/argos/conf.example/conf.map.sysinfo
+pantheon/argos/conf.example/main.reduce
+pantheon/argos/conf.example/main.map
+pantheon/argos/main/path
+pantheon/daemon/conf/poros.proxy
+pantheon/daemon/conf/hermes.cache
+pantheon/daemon/path
+pantheon/janus/main/path
+pantheon/poros/argv/dump
+pantheon/poros/code/dump
+pantheon/poros/code/janus
+pantheon/poros/code/sysinfo
+pantheon/poros/code/grep
+pantheon/poros/path
 pantheon/tools/big
 pantheon/tools/alarm
 pantheon/tools/janus/stat
@@ -91,22 +109,5 @@ pantheon/tools/argos/reduce
 pantheon/tools/argos/map
 pantheon/tools/daemon
 pantheon/tools/mcmd
-pantheon/poros/path
-pantheon/poros/code/dump
-pantheon/poros/code/janus
-pantheon/poros/code/sysinfo
-pantheon/poros/code/dmesg
-pantheon/poros/argv/dump
-pantheon/daemon/path
-pantheon/daemon/conf/poros.proxy
-pantheon/daemon/conf/hermes.cache
-pantheon/janus/main/path
-pantheon/argos/main/path
-pantheon/argos/conf.example/conf.map.sysinfo
-pantheon/argos/conf.example/main.reduce
-pantheon/argos/conf.example/main.map
-pantheon/argos/code/m.http
-pantheon/argos/code/m.sysinfo
-pantheon/argos/code/b.generic
 META.yml                                 Module YAML meta-data (added by MakeMaker)
 META.json                                Module JSON meta-data (added by MakeMaker)

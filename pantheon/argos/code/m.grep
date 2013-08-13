@@ -1,4 +1,4 @@
-### perl: argos/code/m.sysinfo
+### perl: argos/code/m.grep
 use strict;
 use warnings;
 
@@ -9,9 +9,9 @@ return sub
 {
     my ( %param, %mesg ) = @_;
     my ( $batch, $param ) = @param{ qw( batch param ) };
-    my ( $test, $port ) = @$param{ qw( test port ) };
+    my $port = $param->{port};
 
-    my %query = ( code => 'sysinfo', argv => [ $test ] );
+    my %query = ( code => 'grep', argv => [ @$param{ qw( cmd test ) } ] );
     my %result = MIO::TCP
         ->new( map { join ':', $_, $port } @$batch )
         ->run( %$param, input => Poros::Query->dump( \%query ) );

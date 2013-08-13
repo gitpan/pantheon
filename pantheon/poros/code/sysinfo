@@ -25,14 +25,15 @@ return sub
 
         if ( ref $test eq 'HASH' )
         {
-            while ( my ( $key, $val ) = each %$test )
-            {
-                if ( $val = &$eval( $val ) ) { $test->{$key} = $val }
-                else { delete $test->{$key} }
-            }
+            map { delete $test->{$_} unless $test->{$_} = &$eval( $test->{$_} ) }
+                keys %$test;
+
             $test = undef unless %$test;
         }
-        else { $test = &$eval( $test ) }
+        else
+        {
+            $test = &$eval( $test );
+        }
         YAML::XS::DumpFile \*STDOUT, $test if $test;
     }
     return 0;

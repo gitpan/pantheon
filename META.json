@@ -34,6 +34,7 @@
          "requires" : {
             "DBD::SQLite" : "1.37",
             "DBI" : "1.625",
+            "Getopt::Long" : "2.38",
             "Thread::Queue" : "2.12",
             "YAML::XS" : "0.41",
             "threads" : "1.8"
@@ -41,5 +42,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.14"
+   "version" : "0.15"
 }
