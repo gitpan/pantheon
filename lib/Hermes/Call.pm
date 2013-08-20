@@ -10,7 +10,9 @@ Hermes::Call - callback interface to Hermes
 
  my $cb = Hermes::Call->new( '/callback/dir' );
 
- my $result = $cb->run( 'foo' );
+ my $barbaz = $cb->run( foo => [ 1, qw( bar baz ) ] );
+ my $notbarbaz = $cb->run( foo => [ 0, qw( bar baz ) ] );
+ my $all = $cb->run( 'foo' );
 
 =cut
 use strict;
@@ -46,18 +48,51 @@ sub new
 
 =head1 METHODS
 
-=head3 run( $name )
+=head3 select( %query )
 
-Run callback I<$name>. Returns results.
+Run callback ( index of %query ) by condition ( value of %query ).
+Returns results.
+
+=cut
+sub select
+{
+    my ( $self, $name, $cond ) = splice @_;
+    return () unless my $code = $self->{$name};
+
+    my $result = &$code();
+    return () unless $result && ref $result eq 'HASH';
+
+    my ( $match, @val ) = shift @$cond;
+
+    unless ( @$cond )
+    {
+        @val = values %$result;
+    }
+    elsif ( ref ( my $regex = $cond->[0] ) )
+    {
+        my @key = $match
+            ? grep { $_ =~ $regex } keys %$result
+            : grep { $_ !~ $regex } keys %$result;
+
+        @val = @$result{ @key };
+    }
+    else
+    {
+        @val = delete @$result{ @$cond };
+        @val = values %$result unless $match;
+    }
+    @val = grep { $_ && ref $_ eq 'ARRAY' } @val;
+}
+
+=head3 run( %query )
+
+Alias to select().
 
 =cut
 sub run
 {
-    my ( $self, $name ) = splice @_, 0, 2;
-    return {} unless my $code = $self->{$name};
-
-    my $result = &$code();
-    return ref $result eq 'HASH' ? $result : {};
+    my $self = shift;
+    $self->select( @_ );
 }
 
 1;

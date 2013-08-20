@@ -184,7 +184,8 @@ Process dumps collected data to I<run> directory. See Argos::Data.
         $log->say( 'batch: done.' );
 
         confess "thread and batch mismatch" if @batch > threads->list();
-        map { $queue[$_]->enqueue( YAML::XS::Dump $batch[$_] ) } 0 .. $#batch;
+        map { $queue[$_]->enqueue( YAML::XS::Dump( $batch[$_] ),
+            YAML::XS::Dump( $batch{cache} ) ) } 0 .. $#batch;
 
         $log->say( 'map: pending..' );
         my ( $time, %done ) = time;

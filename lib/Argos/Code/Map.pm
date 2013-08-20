@@ -35,7 +35,7 @@ sub run
     my $self = shift;
     my %run = ( error => 'error', $self->param( @_ ) );
     my ( $queue, $error ) = delete @run{ 'queue', 'error' };
-    my ( $batch, $result );
+    my ( $batch, $cache, $result );
 
     while ( 1 )
     {
@@ -47,10 +47,14 @@ sub run
             while ( sleep 1 )
             {
                 next unless $queue->[0]->pending();
-                last if $batch = $queue->[0]->dequeue_nb();
+                last if ( $batch, $cache ) = $queue->[0]->dequeue_nb( 2 );
             }
 
-            $result = &$self( %run, batch => YAML::XS::Load( $batch ) );
+            $result = &$self
+            (
+                %run, batch => YAML::XS::Load( $batch ),
+                cache => YAML::XS::Load( $cache ),
+            );
         };
 
         $result = { $error => { $@ => YAML::XS::Load( $batch ) } } if $@;

@@ -1,5 +1,6 @@
 ### perl: argos/code/m.http
 use strict;
+use Socket;
 use LWP::UserAgent;
 
 use Vulcan::Grep;
@@ -19,7 +20,7 @@ our %ERROR =
 return sub
 {
     my ( %param, %mesg ) = @_;
-    my ( $batch, $param ) = @param{ qw( batch param ) };
+    my ( $batch, $param, $cache ) = @param{ qw( batch param cache ) };
     my ( $proto, $port, $uri, $code, $grep, $timeout, $debug, $resolve ) =
         map { $param->{$_} || $PARAM{$_} }
         qw( proto port uri code grep timeout debug resolve );
@@ -54,9 +55,10 @@ return sub
             : ( ! Vulcan::Grep->new( input => $url, rule => $grep )->eval )
             ? 'cont' : next;
 
-        push @{ $mesg{error}{ $ERROR{$err} } }, $node;
+        push @{ $mesg{error}{ $ERROR{$err} } }, $param->{seco}
+            ? $cache->{seco}{$n} : $param->{hermes}
+            ? [ $n, $cache->{hermes}{$node} ] : $n;
     }
 
     return \%mesg;
 };
-

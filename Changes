@@ -1,6 +1,20 @@
 Revision history for pantheon.
 
-0.15    2013.08.12
+0.16    2013.08.16
+        Hermes - new methods, db(), cb(); callback enhancement
+        Hermes::Call - callback enhancement
+        Argos::Map - bugfix, cache
+        Argos::Code::Map - bugfix, cache
+        update - destructor remove cruft
+        pantheon/argos/example/code/m.http - bugfix
+        pantheon/argos/example/code/m.grep - bugfix
+        pantheon/argos/example/code/m.sysinfo - bugfix
+        pantheon/argos/example/code/m.test - new plugin
+        pantheon/argos/example/code/r.generic - sample generic report plugin
+        pantheon/argos/example/conf/* - example config
+        pantheon/argos/example/main/* - example main config
+
+0.15    2013.08.13
         Vulcan::Grep - new feature
         pantheon/argos/code/m.grep - new plugin
         pantheon/argos/code/m.http - minor enhancement

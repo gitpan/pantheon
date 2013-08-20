@@ -78,6 +78,30 @@ sub new
     return $self;
 }
 
+=head1 METHODS
+
+=head3 db()
+
+Returns cache db object.
+
+=cut
+sub db
+{
+    my $self = shift;
+    return $self->{db};
+}
+
+=head3 cb()
+
+Returns callback object.
+
+=cut
+sub cb
+{
+    my $self = shift;
+    return $self->{cb};
+}
+
 =head1 GRAMMAR
 
 ( BNF rules additional to those in the base class )
@@ -114,31 +138,7 @@ sub call
     my $cond = $self->incr->token( 'close' ) ? [] : $self->query_cond;
 
     return $result unless my $cb = $self->{cb};
-    $cond = [] unless $cond && ref $cond;
-
-    my ( $match, @val ) = shift @$cond;
-    $cb = $cb->run( $name );
-
-    unless ( @$cond )
-    {
-        @val = values %$cb;
-    }
-    elsif ( ref ( my $regex = $cond->[0] ) )
-    {
-        my @key = $match
-            ? grep { $_ =~ $regex } keys %$cb
-            : grep { $_ !~ $regex } keys %$cb;
-
-        @val = @$cb{ @key };
-    }
-    else
-    {
-        @val = delete @$cb{ @$cond };
-        @val = values %$cb unless $match;
-    }
-
-    @val = map { @$_ } grep { $_ && ref $_ eq 'ARRAY' } @val;
-    return $result->load( \@val );
+    return $result->load( [ map { @$_ } $cb->select( $name => $cond || [] ) ] );
 }
 
 =head3 cluster
@@ -184,8 +184,8 @@ sub query_cond
         my $regex = $self->match();
         return
         [
-            $match, defined $col ?
-            grep { $_ =~ $regex } map { @$_ } $self->{db}->select( $col ) : $regex
+            $match, defined $col ? grep { $_ =~ $regex }
+            map { @$_ } $self->{db}->select( $col ) : $regex
         ];
     }
 

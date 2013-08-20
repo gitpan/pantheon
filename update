@@ -22,7 +22,7 @@ chdir $Bin;
 my $manifest = Manifest->new( $INST );
 my $module = basename( $Bin ); $module =~ s/-[\d.]+$//g;
 
-if ( @ARGV && $ARGV[0] eq $INST )
+if ( @ARGV && $ARGV[0] eq $INST && -f $INST )
 {
     $manifest->munge( $ENV{MUNGE_PERL} )->install( $ENV{ uc $module } );
 }
@@ -64,16 +64,18 @@ else
         'README', $HIST, $MAKE, $LIST, $INST, "$INST.PL", $Script;
 
     print $handle map { `find $_ -type f -not -name .*.swp` }
-        qw( lib t ), $manifest->list();
+        qw( lib t ), $manifest->inst();
     close $handle;
 
     ## changes
     system "vi $HIST && cat $LIST"; ## update changes
     warn << "MEMO";
 
-Be sure that the following are up to date.
+*** Be sure that the following are up to date ***
 
-    VERSION and MODULES in $module and PREREQ_PM in $MAKE
+    $module : VERSION and MODULES
+    $MAKE : PREREQ_PM
+    $INST : installation list
 
 MEMO
 }
@@ -85,67 +87,64 @@ package Manifest;
 sub new
 {
     my ( $class, $inst ) = splice @_;
-    my ( %list, @list ) = ( ex => {}, in => {} );
+    my ( %inst, @inst, %list ) = map { $_ => {} } my @ext = qw( in ex );
 
     if ( $inst && open my $fh => $inst )
     {
         for my $path ( <$fh> )
         {
-            $path =~ s/#.*//;
-            $path =~ s/^\s*//;
-            $path =~ s/\s*$//;
-    
+            $path =~ s/#.*//; $path =~ s/^\s*//; $path =~ s/\s*$//;
             next if $path =~ /^$/;
     
-            my $list = $path =~ s/^-\s*// ? $list{ex} : $list{in};
-            map { $list->{$_} = 1 } glob $path;
+            my $inst = $path =~ s/^-\s*// ? $inst{ex} : $inst{in};
+            map { $inst->{$_} = 1 } glob $path;
         }
     
         close $fh;
-        map { delete $list{in}{$_} if $list{in}{$_} } keys %{ $list{ex} };
+        map { delete $inst{in}{$_} if $inst{in}{$_} } keys %{ $inst{ex} };
     
-        for my $ext ( qw( in ex ) )
+        for my $ext ( @ext )
         {
-            my @list = sort keys %{ $list{$ext} };
-            open my $handle, '>', join '.', $inst , $ext;
-            print $handle join( "\n", @list ), "\n";
+            my @inst = sort keys %{ $inst{$ext} };
+            open my $handle, '>', ( $list{$ext} = join '.', $inst , $ext );
+            print $handle join( "\n", @inst ), "\n";
             close $handle;
     
-            $list{$ext} = \@list;
+            $inst{$ext} = \@inst;
         }
     
-        @list = @{ $list{in} };
-        chomp @list;
+        @inst = @{ $inst{in} };
+        chomp @inst;
     }
 
-    bless { inst => $inst, list => \@list }, ref $class || $class;
+    bless { inst => \@inst, list => \%list }, ref $class || $class;
 }
 
 sub list
 {
     my $self = shift;
-    return wantarray ? @{ $self->{list} } : $self->{list};
+    return wantarray ? %{ $self->{list} } : $self->{list};
 }
 
 sub inst
 {
     my $self = shift;
-    return $self->{inst};
+    return wantarray ? @{ $self->{inst} } : $self->{inst};
 }
 
 sub install
 {
     my $self = shift;
-    my $inst = $self->inst();
+    my %list = $self->list();
 
     return $self unless my $dir = shift;
-    return $self unless my @list = $self->list();
+    return $self unless my @inst = $self->inst();
 
-    $inst = "tar -T ${inst}.in -X ${inst}.ex -cf - | \( cd $dir && tar xvf - \)";
+    my $inst = "tar -T $list{in} -X $list{ex} -cf - | \(cd $dir && tar xvf -\)";
 
     warn "$inst\n";
     system "mkdir -p $dir && $inst";
-    map { system "cd $dir && sudo chown -R root:root $_" } @list;
+    map { system "cd $dir && sudo chown -R root:root $_" } @inst;
     return $self;
 }
 
@@ -156,7 +155,7 @@ sub munge
     return $self unless shift;
     warn "Munging invocation perl path to $^X ..\n";
 
-    for my $file ( map { `find $_ -type f` } $self->list() )
+    for my $file ( map { `find $_ -type f` } $self->inst() )
     {
         chomp $file;
         tie my ( @file ), 'Tie::File', $file;
@@ -167,6 +166,13 @@ sub munge
         untie @file;
     }
     return $self;
+}
+
+sub DESTROY
+{
+    my $self = shift;
+    my %list = $self->list();
+    unlink values %list;
 }
 
 1;

@@ -20,7 +20,7 @@ return sub
     {
         while ( my ( $mesg, $node ) = each %$mesg )
         {
-            $mesg =~ s/--- \d+\n$//;
+            $mesg = 'no response' if $mesg !~ s/--- \d+\n$//;
             $mesg{error}{$mesg} = $node if $mesg;
         }
     }

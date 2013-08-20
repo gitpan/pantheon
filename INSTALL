@@ -6,7 +6,7 @@ pantheon/daemon/path
 pantheon/daemon/conf
 pantheon/janus/main/path
 pantheon/argos/main/path
-pantheon/argos/conf.example
-pantheon/argos/code
-#pantheon/lib
+pantheon/argos/example
+#pantheon/argos/code
+#pantheon/hermes/callback
 #pantheon/search
