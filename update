@@ -35,8 +35,9 @@ else
 
     require $path;
     my $version = eval '$' . join '::', @module, 'VERSION';
+    my @version = $version =~ /(\d+)\.(\d+)/;
 
-    if ( @ARGV && ( my @version = $version =~ /(\d+)\.(\d+)/ ) )
+    if ( @ARGV && @version )
     {
         my $bump = lc shift @ARGV;
 
@@ -59,12 +60,22 @@ else
     untie @hist;
 
     ## manifest
+    my @inst = $manifest->inst();
+
+    if ( $version[-1] % 2 == 0 ) ## remove alpha for even version
+    {
+        my @alpha = map { chomp; $_ =~ s/\s*#.+//; qr{^$_} }
+            grep { $_ =~ /^[^-#]/ } `egrep '# *alpha' $INST`;
+
+        @inst = grep { my $path = $_; ! grep { $path =~ $_ } @alpha } @inst;
+    }
+
     die $! unless open my $handle, '>', $LIST;
     map { print $handle "$_\n" }
         'README', $HIST, $MAKE, $LIST, $INST, "$INST.PL", $Script;
 
     print $handle map { `find $_ -type f -not -name .*.swp` }
-        qw( lib t ), $manifest->inst();
+        qw( lib t ), @inst;
     close $handle;
 
     ## changes

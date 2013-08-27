@@ -24,4 +24,4 @@ requires:
   Thread::Queue: 2.12
   YAML::XS: 0.41
   threads: 1.8
-version: 0.16
+version: 0.18

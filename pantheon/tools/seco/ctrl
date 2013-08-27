@@ -1,0 +1,52 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use File::Spec;
+
+use Hermes;
+use Vulcan::OptConf;
+
+$| ++;
+
+my ( @option, %seco ) = qw( online offline start stop build pack qnet user=s );
+BEGIN { %seco = Vulcan::OptConf->load()->get( @option )->dump( 'seco' ) }
+
+use lib $seco{lib};
+use SECO::Ctrl;
+
+my $ctrl = SECO::Ctrl->new();
+my $range = Hermes->new();
+my %param = @ARGV ? ( user => [ map { $range->load( $_ )->list } @ARGV ] ) : ();
+
+if ( $seco{online} )
+{
+    $ctrl->online( %param );
+}
+elsif ( $seco{offline} )
+{
+    $ctrl->offline( %param );
+}
+elsif ( $seco{start} )
+{
+    $ctrl->start( %param );
+}
+elsif ( $seco{stop} )
+{
+    $ctrl->stop( %param );
+}
+elsif ( $seco{build} )
+{
+    $ctrl->build( %param );
+}
+elsif ( $seco{pack} )
+{
+    $ctrl->pack( %param );
+}
+elsif ( $seco{qnet} )
+{
+    $ctrl->qnet( argv => 'info' );
+}
+
+exit 0;

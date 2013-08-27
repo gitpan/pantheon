@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use Dancer;
+use File::Spec;
+
+use Vulcan::OptConf;
+
+$| ++;
+
+my %seco; BEGIN { %seco = Vulcan::OptConf->load()->dump( 'seco' ) }
+
+use lib $seco{lib};
+use SECO::Conf;
+
+get "/hostlist/:cluster" => sub
+{
+    my ( $output, $i ) = ( '', 1 );
+    map { $output .= join( ':', $_, $i ++ ) . "\n" }
+        loadconf( params()->{cluster} )->list( 'host' );
+    return $output;
+};
+
+get "/seconfig/:cluster" => sub
+{
+    my $output = '';
+    for my $cluster ( split ',', params()->{cluster} )
+    {
+        my $i = 1;
+        map { $output .= join( ':', @$_, $i ++ ) . "\n" }
+            loadconf( $cluster )->dump( 'seco' );
+    }
+    return $output;
+};
+
+get "/seco/:host" => sub
+{
+    my $host = params()->{host};
+
+    for my $conf ( glob File::Spec->join( $seco{conf}, '*' ) )
+    {
+        my ( $name, $zone ) = split '@', $conf;
+        my $host = $zone && $host =~ /^(.+)\.$zone/ ? $1 : $host;
+
+        return $conf unless system "grep -q $host $conf";
+    }
+};
+
+dance;
+
+sub loadconf
+{
+    my $zone = shift;
+    my $domain = $SECO::Conf::DOMAIN;
+
+    $zone =~ s/$domain$// if $zone =~ /$domain$/;
+    return SECO::Conf->load( File::Spec->join( $seco{conf}, $zone ) );
+}

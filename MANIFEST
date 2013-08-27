@@ -23,8 +23,6 @@ lib/Hermes/DBI/Cache.pm
 lib/Hermes/Cache.pm
 lib/Hermes/Range.pm
 lib/Hermes/KeySet.pm
-lib/CloudOps/SECtrl.pm
-lib/CloudOps/SEConfig.pm
 lib/Ceres/Rcvr.pm
 lib/Ceres/DBI/Index.pm
 lib/Ceres/Sndr.pm
@@ -100,6 +98,10 @@ pantheon/tools/loop
 pantheon/tools/.config
 pantheon/tools/decruft
 pantheon/tools/range
+pantheon/tools/seco/check
+pantheon/tools/seco/dance
+pantheon/tools/seco/ctrl
+pantheon/tools/seco/go
 pantheon/tools/sysinfo
 pantheon/tools/fping-r
 pantheon/tools/poros/proxy
