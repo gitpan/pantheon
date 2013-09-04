@@ -24,8 +24,6 @@ use Carp;
 use File::Spec;
 use Fcntl qw( :flock );
 
-$| ++;
-
 sub new
 {
     my ( $class, $file ) = splice @_;
@@ -57,6 +55,8 @@ Attempts to acquire lock. Returns pid if successful, undef otherwise.
 =cut
 sub lock
 {
+    local $| = 1;
+
     my ( $self, $pid ) = shift;
 
     return $pid unless flock $$self, LOCK_EX | LOCK_NB;

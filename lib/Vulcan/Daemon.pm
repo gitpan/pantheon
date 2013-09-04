@@ -13,8 +13,6 @@ use YAML::XS;
 use File::Spec;
 use File::Temp;
 
-$| ++;
-
 =head1 CONFIGURATION
 
 A YAML file that defines I<conf> and I<service> paths. Each must be a
@@ -136,6 +134,8 @@ sub path
 
 sub script
 {
+    local $| = 1;
+
     my ( $self, $path ) = splice @_, 0, 2;
 
     my $handle = File::Temp->new( UNLINK => 0 );

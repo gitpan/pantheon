@@ -16,8 +16,6 @@ use Digest::MD5;
 
 our $CYCLE = 120;
 
-$| ++;
-
 sub new 
 {
     my ( $class, %self ) = splice @_;
@@ -43,6 +41,8 @@ path to dump data
 
 sub run
 {
+    local $| = 1;
+
     my $self = shift;
     my %run = ( log => \*STDERR, cache => {}, @_ );
 

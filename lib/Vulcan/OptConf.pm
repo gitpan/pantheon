@@ -16,7 +16,7 @@ use Getopt::Long;
 use Pod::Usage;
 use FindBin qw( $RealScript $RealBin );
 
-$| ++;
+local $| = 1;
 
 our ( $ARGC, $THIS, $CONF, $ROOT, @CONF ) = ( 0, $RealScript, '.config' );
 
@@ -122,10 +122,23 @@ if $ARGC is negative, otherwise size of @ARGV needs to equal $ARGC.
 sub get
 {
     my $self = shift;
-    Getopt::Long::Configure( @CONF ) if @CONF;
-    Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
-        if ! Getopt::Long::GetOptions( $self->{$THIS}, @_ )
+    push @CONF, 'auto_help' unless grep /auto_help/, @CONF;
+    Getopt::Long::Configure( @CONF );
+    $self->assert() if ! Getopt::Long::GetOptions( $self->{$THIS}, @_ )
         || $ARGC < 0 && ! @ARGV || $ARGC > 0 && @ARGV != $ARGC;
+    return $self;
+}
+
+=head3 assert( @option )
+
+print help and exit, when any of @option is not defined.
+
+=cut
+sub assert
+{
+    my $self = shift;
+    Pod::Usage::pod2usage( -input => $0, -output => \*STDERR, -verbose => 2 )
+        if ! @_ || grep { ! defined $self->{$THIS}{$_} } @_;
     return $self;
 }
 

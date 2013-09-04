@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Hermes;
-use MIO::CMD;
+use MIO::SSH;
 use Vulcan::OptConf;
 
 $| ++;
@@ -14,18 +14,27 @@ $Vulcan::OptConf::ARGC = -1;
 
 =head1 SYNOPSIS
 
- $0 -r range [--timeout seconds] [--max number] [--noop] cmd ..
-
+ $0 -r range [--timeout seconds] [--max number] \
+    [--user user] [--sudo sudoer] [--fast] [--noop] cmd ..
+     
 =cut
 my $option = Vulcan::OptConf->load();
-my %o = $option->get( qw( range=s timeout=i max=i noop ) )->dump();
+my %o = $option->get( qw( range=s timeout=i max=i user=s sudo=s fast noop ) )
+    ->dump();
 
 $option->assert( 'range' );
 
 my $range = Hermes->new( $option->dump( 'range' ) );
 my %cmd = map { $_ => \@ARGV } $range->load( delete $o{range} )->list();
 
-my %result = MIO::CMD->new( %cmd )->run( %o );
+unless ( $o{noop} )
+{
+    print STDERR "password: ";
+    system 'stty -echo'; $o{pass} = <STDIN>; system 'stty echo';
+    $o{lock} = "/tmp/mssh.$$" unless $o{fast};
+}
+
+my %result = MIO::SSH->new( %cmd )->run( %o );
 my %mesg;
 
 while ( my ( $io, $mesg ) = each %result )

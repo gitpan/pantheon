@@ -28,9 +28,6 @@ use Time::HiRes qw( time );
 use POSIX qw( :sys_wait_h );
 use IO::Poll qw( POLLIN POLLHUP POLLOUT );
 
-$| ++;
-$/ = undef;
-
 use constant { MAXBUF => 4096, PERIOD => 0.1 };
 
 our %RUN = ( max => 32, timeout => 300, log => \*STDERR );
@@ -64,13 +61,16 @@ Returns HASH of HASH of nodes. First level is indexed by type
 =cut
 sub run
 {
+    local $| = 1;
+    local $/ = undef;
+
     my $self = shift;
 
     confess "poll: $!" unless my $poll = IO::Poll->new();
 
     my %run = ( %RUN, @_ );
     my ( $log, $max, $timeout ) = @run{ qw( log max timeout ) };
-    my ( %result, %buffer, %count );
+    my ( %result, %buffer, %busy );
     my @node = keys %$self;
     my %node = map { $_ => {} } qw( stdout stderr );
     my $input = defined $run{input} ? $run{input} : -t STDIN ? '' : <STDIN>;
@@ -79,9 +79,9 @@ sub run
     {
         if ( time - $time > $timeout ) ## timeout
         {
-            for my $node ( keys %count )
+            for my $node ( keys %busy )
             {
-                my ( $pid ) = @{ delete $count{$node} };
+                my ( $pid ) = @{ delete $busy{$node} };
                 kill 9, $pid;
                 waitpid $pid, WNOHANG;
                 push @{ $result{error}{timeout} }, $node;
@@ -91,12 +91,19 @@ sub run
             last;
         }
 
-        while ( @node && keys %count < $max )
+        while ( @node && keys %busy < $max )
         {
             my $node = shift @node;
             my $cmd = $self->{$node};
-            my @io = ( undef, undef, Symbol::gensym );
             my @cmd = map { my $t = $_; $t =~ s/{}/$node/g; $t } @$cmd;
+
+            if ( $run{noop} )
+            {
+                print $log join ' ', @cmd, "\n";
+                next;
+            }
+
+            my @io = ( undef, undef, Symbol::gensym );
             my $pid = eval { IPC::Open3::open3( @io, @cmd ) };
 
             if ( $@ )
@@ -112,7 +119,7 @@ sub run
             $node{ $io[1] } = [ stdout => $node ]; 
             $node{ $io[2] } = [ stderr => $node ]; 
 
-            $count{$node} = [ $pid, 2 ];
+            $busy{$node} = [ $pid, 2 ];
             print $log "$node started.\n";
         }
 
@@ -138,10 +145,10 @@ sub run
             push @{ $result{$io}{ delete $buffer{$fh} } }, $node
                 if defined $buffer{$fh} && length $buffer{$fh};
 
-            unless ( -- $count{$node}[1] )
+            unless ( -- $busy{$node}[1] )
             {
-                waitpid $count{$node}[0], WNOHANG;
-                delete $count{$node};
+                waitpid $busy{$node}[0], WNOHANG;
+                delete $busy{$node};
                 print $log "$node done.\n";
             }
 

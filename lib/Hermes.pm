@@ -125,7 +125,7 @@ sub complex
     return $result;
 }
 
-=head3 complex
+=head3 call
 
  <call_sym> <string> <query_cond>
 

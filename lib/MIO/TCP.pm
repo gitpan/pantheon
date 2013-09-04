@@ -25,9 +25,6 @@ use File::Spec;
 use Time::HiRes qw( time );
 use IO::Poll 0.04 qw( POLLIN POLLHUP POLLOUT );
 
-$| ++;
-$/ = undef;
-
 use constant { MAXBUF => 4096, PERIOD => 0.1 };
 
 our %RUN = ( max => 128, timeout => 300, log => \*STDERR );
@@ -82,12 +79,15 @@ Returns HASH of HASH of nodes. First level is indexed by type
 =cut
 sub run
 {
+    local $| = 1;
+    local $/ = undef;
+
     my $self = shift;
 
     confess "poll: $!" unless my $poll = IO::Poll->new();
 
     my %run = ( %RUN, @_ );
-    my ( %result, %buffer, %count );
+    my ( %result, %buffer, %busy );
     my ( $log, $max, $timeout, $input ) = @run{ qw( log max timeout input ) };
     my @node = keys %$self;
 
@@ -97,18 +97,18 @@ sub run
     {
         if ( time - $time > $timeout ) ## timeout
         {
-            for my $sock ( keys %count )
+            for my $sock ( keys %busy )
             {
                 $poll->remove( $sock );
                 shutdown $sock, 2;
-                push @{ $result{error}{timeout} }, delete $count{$sock};
+                push @{ $result{error}{timeout} }, delete $busy{$sock};
             }
 
             print $log "timeout!\n";
             last;
         }
 
-        while ( @node && keys %count < $max )
+        while ( @node && keys %busy < $max )
         {
             my $node = shift @node;
             my ( $type, $addr, $sock ) = @{ $self->{$node} };
@@ -123,7 +123,7 @@ sub run
             connect $sock, $addr;
 
             $poll->mask( $sock => POLLIN | POLLOUT );
-            $count{$sock} = $node;
+            $busy{$sock} = $node;
             print $log "$node started.\n";
         }
 
@@ -144,7 +144,7 @@ sub run
 
         for my $sock ( $poll->handles( POLLHUP ) ) ## done
         {
-            my $node = delete $count{$sock};
+            my $node = delete $busy{$sock};
 
             push @{ $result{mesg}{ delete $buffer{$sock} } }, $node
                 if length $buffer{$sock};

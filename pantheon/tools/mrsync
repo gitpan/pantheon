@@ -2,8 +2,8 @@
 
 =head1 SYNOPSIS
 
- $0 [--src src-range] --dst dst-range --sp src-path [--dp dst-path]
- [--timeout seconds] [--max number] [--retry number] [rsync options] 
+ $0 [--src src-range] --dst dst-range --sp src-path [--dp dst-path] \
+    [--timeout seconds] [--max number] [--retry number] [rsync options] 
 
 =cut
 use strict;

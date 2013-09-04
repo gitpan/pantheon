@@ -19,9 +19,6 @@ use warnings;
 use Poros::Path;
 use Poros::Query;
 
-$/ = undef;
-$| ++;
-
 sub new 
 {
     my $class = shift;
@@ -39,6 +36,9 @@ See Poros::Query.
 =cut
 sub run
 {
+    local $| = 1;
+    local $/ = undef;
+
     my $self = shift;
     warn sprintf "%s:%s\n", @ENV{ qw( TCPREMOTEIP TCPREMOTEPORT ) };
 
