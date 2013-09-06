@@ -72,7 +72,7 @@ sub symbol
 {
     my $self = shift;
     my $symbol = $self->{symbol} = { map { reverse %$_ } values %SYMBOL };
-    return reverse sort map { $_ =~ s/\?/\\\?/g; $_ } keys %$symbol;
+    return reverse sort map { $_ =~ s/([?^])/\\$1/g; $_ } keys %$symbol;
 }
 
 =head3 expr

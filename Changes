@@ -1,7 +1,19 @@
 Revision history for pantheon.
 
+0.22    2013.09.06
+
+0.21    2013.09.06
+        MIO::TCP - bugfix
+        Vulcan::Manifest - new module
+        Vulcan::DirConf - $Script and $RealScript macros
+        Hermes::Range - bugfix, symdiff
+        Makefile.PL - update dependencies
+        pantheon/tools/backup - new tool, backup pantheon site installation
+        pantheon/.backup - default backup manifest
+        pantheon/seco/callback/list - new callback
+        UPDATE - use Vulcan::Manifest
+
 0.20    2013.09.04
-        changes described in previous release, excluding alpha (odd).
 
 0.19    2013.08.29
         update - replaced by UPDATE, bugfix
@@ -12,7 +24,6 @@ Revision history for pantheon.
         pantheon/tools/mcmd - new feture, noop
 
 0.18    2013.08.27
-        changes described in previous release, excluding alpha (odd).
 
 0.17    2013.08.20
         update - new feature, for bisected releases.

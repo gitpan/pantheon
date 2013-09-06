@@ -1,12 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 SYNOPSIS
-
-Delete hermes databases entries
-
- $0 --cluster clusters --table table [--key nodes] [--value values]
-
-=cut
 use strict;
 use warnings;
 use YAML::XS;
@@ -22,6 +15,13 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
+=head1 SYNOPSIS
+
+Delete hermes databases entries
+
+ $0 --cluster clusters --table table [--key nodes] [--value values]
+
+=cut
 my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( cluster=s table=s key=s value=s ) )->dump();
 

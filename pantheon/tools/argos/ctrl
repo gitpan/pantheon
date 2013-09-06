@@ -16,25 +16,9 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'argos';
 
-my $option = Vulcan::OptConf->load();
-my %o = $option->get( qw( time=s pause exclude ) )->dump();
-
-my $path = Argos::Path->new( $o{path} );
-die "argos not set up.\n" unless $path->check();
-
 =head1 SYNOPSIS
 
 Control argos processes.
-
-=cut
-my $ctrl = $path->path( run => '.ctrl' );
-exit 0 unless -f $ctrl || -l $ctrl;
-$ctrl = Argos::Ctrl->new( $ctrl );
-
-my $range = Hermes->new( $option->dump( 'range' ) );
-my $time = Argos::Conf->time( $o{time} );
-my $now = time;
-my @info = ( $time ? $time + $now : 0, operator() );
 
 =head3 pause/resume
 
@@ -45,6 +29,21 @@ $0 name .. --pause [ --time 20min ]
 $0 name .. --exclude [ --time 20min ]
 
 =cut
+my $option = Vulcan::OptConf->load();
+my %o = $option->get( qw( time=s pause exclude ) )->dump();
+
+my $path = Argos::Path->new( $o{path} );
+die "argos not set up.\n" unless $path->check();
+
+my $ctrl = $path->path( run => '.ctrl' );
+exit 0 unless -f $ctrl || -l $ctrl;
+$ctrl = Argos::Ctrl->new( $ctrl );
+
+my $range = Hermes->new( $option->dump( 'range' ) );
+my $time = Argos::Conf->time( $o{time} );
+my $now = time;
+my @info = ( $time ? $time + $now : 0, operator() );
+
 if ( my $method = $o{pause} ? 'pause' : $o{exclude} ? 'exclude' : undef )
 {
     map { $ctrl->$method( $_, @info ) } map { $range->load( $_ )->list } @ARGV;

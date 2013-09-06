@@ -1,12 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 SYNOPSIS
-
-Dump hermes databases to YAML
-
- $0 clusters [--output output-file] [--compress] [--list]
-
-=cut
 use strict;
 use warnings;
 use YAML::XS;
@@ -19,6 +12,13 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
+=head1 SYNOPSIS
+
+Dump hermes databases to YAML
+
+ $0 [clusters] [--output output-file] [--compress] [--list]
+
+=cut
 my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( list compress output=s ) )->dump();
 my $range = Hermes->new( $option->dump( 'range' ) );

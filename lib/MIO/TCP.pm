@@ -100,7 +100,7 @@ sub run
             for my $sock ( keys %busy )
             {
                 $poll->remove( $sock );
-                shutdown $sock, 2;
+                eval { shutdown $sock, 2 };
                 push @{ $result{error}{timeout} }, delete $busy{$sock};
             }
 

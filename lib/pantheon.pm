@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.20';
+our $VERSION = '0.22';
 
 =head1 MODULES
 
@@ -58,8 +58,9 @@ A maintenance platform
 
 Multiplexed IO
 
- MIO::CMD
  MIO::TCP
+ MIO::CMD
+ MIO::SSH
 
 =head3 Poros
 
@@ -107,6 +108,7 @@ A suite of utility modules
  Vulcan::Cruft
  Vulcan::Grep
  Vulcan::Sudo
+ Vulcan::Manifest
 
 =head1 AUTHOR
 

@@ -1,0 +1,11 @@
+./argos/
+./daemon/
+./hermes/
+./janus/
+./poros/
+./seco/
+./tools/
+./.backup
+
+- ./*/{run,example,service,cache}
+

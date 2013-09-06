@@ -7,7 +7,8 @@ pantheon/daemon/conf
 pantheon/janus/main/path
 pantheon/argos/main/path
 pantheon/argos/example
+pantheon/.backup
 pantheon/argos/code           # alpha
-pantheon/hermes/callback      # alpha
+pantheon/hermes/callback/seco # alpha
 pantheon/tools/seco           # alpha
 pantheon/seco                 # alpha

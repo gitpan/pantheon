@@ -6,6 +6,9 @@ use Tie::File;
 use File::Basename;
 use FindBin qw( $Bin $Script );
 
+use lib "$Bin/lib";
+use Vulcan::Manifest;
+
 $| ++;
 
 our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST INSTALL );
@@ -17,12 +20,40 @@ our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST INSTALL );
 =cut
 chdir $Bin;
 
-my $manifest = Manifest->new( $INST );
 my $module = basename( $Bin ); $module =~ s/-[\d.]+$//g;
+my $list = Vulcan::Manifest->new( $INST )->dump();
+my @inst = @{ $list->list( 'in' ) };
 
 if ( @ARGV && $ARGV[0] eq $INST && -f $INST )
 {
-    $manifest->munge( $ENV{MUNGE_PERL} )->install( $ENV{ uc $module } );
+    exit 0 unless @inst;
+
+    if ( $ENV{MUNGE_PERL} ) ## munge perl invocation path
+    {
+        warn "Munging invocation perl path to $^X ..\n";
+
+        for my $file ( map { `find $_ -type f` } @inst )
+        {
+            chomp $file;
+            tie my ( @file ), 'Tie::File', $file;
+
+            next unless @file && $file[0] =~ /#![^#]*perl(.*$)/o;
+            $file[0] = "#!$^X$1";
+            warn "$file\n";
+            untie @file;
+        }
+    }
+
+    if ( my $dir = $ENV{ uc $module } ) ## install
+    {
+        my %file = map { $_ => $list->file( $_ ) } qw( in ex );
+        my $inst = 
+            "tar -T $file{in} -X $file{ex} -cf - | \( cd $dir && tar xvf -\ )";
+
+        warn "$inst\n";
+        system "mkdir -p $dir && $inst";
+        map { system "cd $dir && sudo chown -R root:root $_" } @inst;
+    }
 }
 else
 {
@@ -58,8 +89,6 @@ else
     untie @hist;
 
     ## manifest
-    my @inst = $manifest->inst();
-
     if ( $version[-1] % 2 == 0 ) ## remove alpha for even version
     {
         my @alpha = map { chomp; $_ =~ s/\s*#.+//; qr{^$_} }
@@ -92,98 +121,3 @@ MEMO
 }
 
 exit 0;
-
-package Manifest;
-
-sub new
-{
-    my ( $class, $inst ) = splice @_;
-    my ( %inst, @inst, %list ) = map { $_ => {} } my @ext = qw( in ex );
-
-    if ( $inst && open my $fh => $inst )
-    {
-        for my $path ( <$fh> )
-        {
-            $path =~ s/#.*//; $path =~ s/^\s*//; $path =~ s/\s*$//;
-            next if $path =~ /^$/;
-    
-            my $inst = $path =~ s/^-\s*// ? $inst{ex} : $inst{in};
-            map { $inst->{$_} = 1 } glob $path;
-        }
-    
-        close $fh;
-        map { delete $inst{in}{$_} if $inst{in}{$_} } keys %{ $inst{ex} };
-    
-        for my $ext ( @ext )
-        {
-            my @inst = sort keys %{ $inst{$ext} };
-            open my $handle, '>', ( $list{$ext} = join '.', $inst , $ext );
-            print $handle join( "\n", @inst ), "\n";
-            close $handle;
-    
-            $inst{$ext} = \@inst;
-        }
-    
-        @inst = @{ $inst{in} };
-        chomp @inst;
-    }
-
-    bless { inst => \@inst, list => \%list }, ref $class || $class;
-}
-
-sub list
-{
-    my $self = shift;
-    return wantarray ? %{ $self->{list} } : $self->{list};
-}
-
-sub inst
-{
-    my $self = shift;
-    return wantarray ? @{ $self->{inst} } : $self->{inst};
-}
-
-sub install
-{
-    my $self = shift;
-    my %list = $self->list();
-
-    return $self unless my $dir = shift;
-    return $self unless my @inst = $self->inst();
-
-    my $inst = "tar -T $list{in} -X $list{ex} -cf - | \(cd $dir && tar xvf -\)";
-
-    warn "$inst\n";
-    system "mkdir -p $dir && $inst";
-    map { system "cd $dir && sudo chown -R root:root $_" } @inst;
-    return $self;
-}
-
-sub munge
-{
-    my $self = shift;
-
-    return $self unless shift;
-    warn "Munging invocation perl path to $^X ..\n";
-
-    for my $file ( map { `find $_ -type f` } $self->inst() )
-    {
-        chomp $file;
-        tie my ( @file ), 'Tie::File', $file;
-
-        next unless @file && $file[0] =~ /#![^#]*perl(.*$)/o;
-        $file[0] = "#!$^X$1";
-        warn "$file\n";
-        untie @file;
-    }
-    return $self;
-}
-
-sub DESTROY
-{
-    my $self = shift;
-    my %list = $self->list();
-    unlink values %list;
-}
-
-1;

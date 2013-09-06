@@ -1,13 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 SYNOPSIS
-
-Execute a command in a loop; sleep between iterations; write command
-output to a file.
-
-$0 [--interval seconds] [--output file] command ..
-
-=cut
 use strict;
 use warnings;
 
@@ -18,6 +10,14 @@ $| ++;
 $Vulcan::OptConf::ARGC = -1;
 @Vulcan::OptConf::CONF = qw( pass_through no_ignore_case );
 
+=head1 SYNOPSIS
+
+Execute a command in a loop; sleep between iterations; write command
+output to a file.
+
+$0 [--interval seconds] [--output file] command ..
+
+=cut
 my %o = Vulcan::OptConf
     ->load()->set( interval => 1 )->get( qw( interval=i output=s ) )->dump();
 

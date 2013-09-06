@@ -16,10 +16,7 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'janus';
 
-my $option = Vulcan::OptConf->load();
-my %o = $option
-    ->set( number => 5, interval => 2 )
-    ->get( qw( number=i interval=i ) )->dump();
+our @OPTION = ( number => 5, interval => 2 );
 
 =head1 SYNOPSIS
 
@@ -28,14 +25,17 @@ Tail janus log. If no names are given, tail all logs.
 $0 [names ..] [--number I<num>] [--interval I<num>]
 
 =cut
+my $option = Vulcan::OptConf->load();
+my %o = $option->set( @OPTION )->get( map { "$_=i" } @OPTION[0,2] )->dump();
+
 my $path = Janus::Path->new( $o{path} );
 my $conf = Janus::Conf->new( $o{conf} );
 
 my $range = Hermes->new( $option->dump( 'range' ) );
 my @name = grep { $conf->dump( $_ ) } map { $range->load( $_ )->list() } @ARGV;
 
-my ( $number, $interval ) = @o{ qw( number interval ) };
 my $mtime = 0;
+my ( $number, $interval ) = @o{ @OPTION[0,2] };
 
 while ( $number && $interval )
 {

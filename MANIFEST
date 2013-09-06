@@ -54,6 +54,7 @@ lib/Vulcan/Daemon.pm
 lib/Vulcan/DirConf.pm
 lib/Vulcan/Grep.pm
 lib/Vulcan/Logger.pm
+lib/Vulcan/Manifest.pm
 lib/Vulcan/Mrsync.pm
 lib/Vulcan/OptConf.pm
 lib/Vulcan/Phasic.pm
@@ -63,6 +64,7 @@ lib/Vulcan/Sudo.pm
 lib/Vulcan/Symlink.pm
 lib/Vulcan/SysInfo.pm
 lib/pantheon.pm
+pantheon/.backup
 pantheon/argos/example/code/b.generic
 pantheon/argos/example/code/m.grep
 pantheon/argos/example/code/m.http
@@ -90,6 +92,7 @@ pantheon/tools/alarm
 pantheon/tools/argos/ctrl
 pantheon/tools/argos/map
 pantheon/tools/argos/reduce
+pantheon/tools/backup
 pantheon/tools/big
 pantheon/tools/daemon
 pantheon/tools/decruft

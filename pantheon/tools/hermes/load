@@ -1,12 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 SYNOPSIS
-
-Load YAML data into hermes databases.
-
- $0 [input-file] [--quiet] [--filter '{cluster1: [table1,table2], ..}']
-
-=cut
 use strict;
 use warnings;
 use YAML::XS;
@@ -23,6 +16,13 @@ $/ = undef;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
+=head1 SYNOPSIS
+
+Load YAML data into hermes databases.
+
+ $0 [input-file] [--quiet] [--filter '{cluster1: [table1,table2], ..}']
+
+=cut
 my %o = Vulcan::OptConf->load()->get( qw( quiet filter=s ) )->dump();
 my $range = Hermes->new();
 my $filter = $o{filter} ? YAML::XS::Load $o{filter} : {};

@@ -1,12 +1,5 @@
 #!/usr/bin/env perl
 
-=head1 SYNOPSIS
-
-Modfiy hermes databases for nodes
-
- $0 [--range nodes] [--value value] [--quiet]
-
-=cut
 use strict;
 use warnings;
 use YAML::XS;
@@ -25,6 +18,14 @@ $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
 
+=head1 SYNOPSIS
+
+Modfiy hermes databases for nodes
+
+ $0 [--range nodes] [--value value] \
+    [--cluster clusters] [--table tables] [--quiet]
+
+=cut
 my $option = Vulcan::OptConf->load();
 my %o = $option->get( qw( range=s value=s cluster=s table=s quiet ) )->dump();
 
