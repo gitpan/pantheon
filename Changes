@@ -1,5 +1,17 @@
 Revision history for pantheon.
 
+0.24    2013.09.14
+
+0.23    2013.09.09
+        Hermes::Object - new module, object interface for overloaded operators
+        Hermes::KeySet - implements Hermes::Object
+        Vulcan::Cruft - new method cut() for log rotation
+        Vulcan::Daemon - defaults adjusted; bugfix, kill() now stops multilog
+        pantheon/argos/code/r.seco - bugfix for hermes lookup
+        pantheon/seco/callback/node - new callback
+        SECO::Index - SECO index build module
+        pantheon/tools/seco/index - new tools, build index
+
 0.22    2013.09.06
 
 0.21    2013.09.06

@@ -28,6 +28,8 @@ use strict;
 use warnings;
 use Carp;
 
+use base qw( Hermes::Object );
+
 =head1 SYMBOLS
 
 range : '~'
@@ -44,6 +46,17 @@ sub new
 }
 
 =head1 DATA METHODS
+
+=head3 clone()
+
+Returns a cloned object.
+
+=cut
+sub clone
+{
+    my $self = shift;
+    my $clone = $self->new()->load( $self );
+}
 
 =head3 get( $o )
 
@@ -204,7 +217,6 @@ sub multiply
         delete $set->{$x};
         @$set{ map { $x . $_ } @key } = @val;
     }
-
     return $self;
 }
 

@@ -1,14 +1,21 @@
-pantheon/tools
 pantheon/poros/path
 pantheon/poros/code
 pantheon/poros/argv
+
 pantheon/daemon/path
 pantheon/daemon/conf
+
 pantheon/janus/main/path
+
 pantheon/argos/main/path
 pantheon/argos/example
-pantheon/.backup
 pantheon/argos/code           # alpha
-pantheon/hermes/callback/seco # alpha
+
+pantheon/tools
 pantheon/tools/seco           # alpha
+
+pantheon/hermes/callback
+pantheon/hermes/callback/seco # alpha
+
+pantheon/.backup
 pantheon/seco                 # alpha

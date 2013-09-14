@@ -26,6 +26,7 @@ lib/Hermes/Call.pm
 lib/Hermes/DBI/Cache.pm
 lib/Hermes/DBI/Root.pm
 lib/Hermes/KeySet.pm
+lib/Hermes/Object.pm
 lib/Hermes/Range.pm
 lib/Janus.pm
 lib/Janus/Conf.pm
@@ -80,6 +81,9 @@ pantheon/argos/main/path
 pantheon/daemon/conf/hermes.cache
 pantheon/daemon/conf/poros.proxy
 pantheon/daemon/path
+pantheon/hermes/callback/list
+pantheon/hermes/callback/node
+pantheon/hermes/callback/seco
 pantheon/janus/main/path
 pantheon/poros/argv/dump
 pantheon/poros/code/dump
@@ -113,10 +117,12 @@ pantheon/tools/mssh
 pantheon/tools/poros/client
 pantheon/tools/poros/proxy
 pantheon/tools/range
+pantheon/tools/rotate
 pantheon/tools/seco/check
 pantheon/tools/seco/ctrl
 pantheon/tools/seco/dance
 pantheon/tools/seco/go
+pantheon/tools/seco/index
 pantheon/tools/sysinfo
 t/00-load.t
 t/boilerplate.t

@@ -2,13 +2,14 @@ package Vulcan::Cruft;
 
 =head1 NAME
 
-Vulcan::Cruft - Keep directories clean of cruft.
+Vulcan::Cruft - Rotate log files and keep directories clean of cruft.
 
 =cut
 use strict;
 use warnings;
 
 use Carp;
+use POSIX;
 use File::Spec;
 use File::Basename;
 use Time::HiRes qw( time );
@@ -17,11 +18,15 @@ use constant KILO => 1024;
 use constant BYTE => qw( B K M G T P E Z Y );
 use constant TIME => qw( S 1 M 60 H 3600 D 86400 W 604800 );
 
+our %CUT = ( block => '8K', size => '10MB' );
+
 =head1 SYNOPSIS
 
  use Vulcan::Cruft;
 
- my $cruft = Vulcan::Cruft->new( @logdir );
+ my $cruft = Vulcan::Cruft->new( @logdir, @logfile );
+
+ my %cut = $cruft->cut( size => '10MB', block => '8K' );
 
  unlink $cruft->cruft
  ( 
@@ -34,15 +39,9 @@ use constant TIME => qw( S 1 M 60 H 3600 D 86400 W 604800 );
 =cut
 sub new
 {
-    my ( $class, @path ) = shift;
-
-    for my $path ( @_ )
-    {
-        $path = readlink $path if -l $path;
-        push @path, $path if -d $path;
-    }
-
-    bless \@path, ref $class || $class;
+    my $class = shift;
+    bless [ map { -l $_ ? readlink $_ : $_ } map { glob $_ } @_ ],
+        ref $class || $class;
 }
 
 =head1 METHODS
@@ -60,15 +59,16 @@ Purge files according to %param. Returns a list of 'cruft'.
 =cut
 sub cruft
 {
-    my $self = shift;
-    my ( %param, %stat, @file, @cruft ) = @_;
+    my ( $self, %param ) = splice @_;
     my ( $count, $regex ) = @param{ qw( count regex ) };
+    my ( $now, %stat, @file, @cruft ) = time;
+
     my $size = $self->convert( size => $param{size} );
     my $age = $self->convert( time => $param{age} );
 
     for my $path ( @$self )
     {
-        my ( $now, $sum ) = ( time, 0 );
+        my $sum = -d $path ? 0 : next;
 
         for my $file ( glob File::Spec->join( $path, '*' ) )
         {
@@ -76,14 +76,17 @@ sub cruft
             next if $regex && File::Basename::basename( $file ) !~ $regex;
 
             my ( $size, $ctime ) = ( stat $file )[7,10];
-            if ( $age && $now > $ctime + $age ) { push @cruft, $file }
+            if ( $now && $now > $ctime + $age ) { push @cruft, $file }
             else { $stat{$file} = [ $size, $ctime, $file ] }
         }
 
         for my $file ( sort { $stat{$b}[1] <=> $stat{$a}[1] } keys %stat )
         {
-            $sum += $stat{$file}[0];
-            if ( $size && $sum > $size ) { push @cruft, $file }
+            if ( $size && ( $sum += $stat{$file}[0] ) > $size )
+            {
+                push @cruft, $file;
+                $sum -= $stat{$file}[0] unless $age;
+            }
             else { unshift @file, $file }
         }
 
@@ -92,6 +95,50 @@ sub cruft
 
     unlink @cruft if $param{remove};
     return wantarray ? @cruft : \@cruft;
+}
+
+=head3 cut( %param )
+
+Rotate files according to %param. Returns a hash of results.
+
+ size: max size of each segment.
+ block: block size ( per cut ).
+
+=cut
+sub cut
+{
+    my ( $self, %param, %cut ) = splice @_;
+    my ( $block, $size ) = map { $self->convert( $param{$_} || $CUT{$_} ) }
+        qw( block size );
+
+    $block = $size if $size < $block;
+
+    my $count = int( $size / $block );
+    my $dd = "dd bs=$block count=$count";
+    my $time = POSIX::strftime( '.%Y-%m-%d.%H%M.', localtime );
+
+    for my $file ( @$self )
+    {
+        next unless -f $file;
+        next unless my $cut = int( ( stat $file )[7] / $size );
+
+        my ( $chunk, $i ) = ( $file.$time, 0 );
+
+        while ( $i <= $cut )
+        {
+            my $skip = $count * $i;
+            my $of = $chunk . ++ $i;
+            last if system sprintf "$dd if=$file of=$of skip=$skip";
+        }
+
+        if ( $i )
+        {
+            $chunk .= $i;
+            system "cat $chunk > $file && rm $chunk";
+            $cut{$file} = [ $time, $i ];
+        }
+    }
+    return wantarray ? %cut : \%cut;
 }
 
 =head3 convert( $type, $expr )

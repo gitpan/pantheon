@@ -38,12 +38,12 @@ I<optional>, default to ( ):
  ionice: ( 3 ) ionice -c value.
  wait: ( 20 ) sleep a few seconds after a failed launch.
 
- size: ( 10000 ) multilog S value
- keep: ( 10 ) multilog N value
+ size: ( 10000000 ) multilog S value
+ keep: ( 5 ) multilog N value
 
 =cut
 our %RUN = ( user => 'nobody', wait => 20, nice => 19, ionice => 3 );
-our %LOG = ( size => 10000, keep => 10 );
+our %LOG = ( size => 10000000, keep => 5 );
 
 =head1 SYNOPSIS
 
@@ -67,6 +67,7 @@ sub new
     $self{link} = "/service/$name";
     $self{path} = $path->path( service => $name );
     $self{conf} = $conf = eval { YAML::XS::LoadFile $conf };
+    $self{mlog} = File::Spec->join( $self{path}, 'log' );
 
     confess "$error: $@" if $@; 
     confess "$error: not HASH" if ref $conf ne 'HASH';
@@ -86,23 +87,21 @@ Set up and launch service.
 sub run
 {
     my $self = shift;
-    my ( $name, $link, $path, $conf ) = @$self{ qw( name link path conf ) };
-    my %run = ( %RUN, %LOG, %$conf );
+    my %run = ( %RUN, %LOG, %{ $self->{conf} } );
+    my ( $name, $link, $path, $log ) = @$self{ qw( name link path mlog ) };
 
-    my $log = File::Spec->join( $path, 'log' );
     my $mkdir = "mkdir -p $log";
-    confess "failed to $mkdir" if system( $mkdir );
+    my $user = delete $run{user};
+    my $main = './main';
 
-    my $user = delete $conf->{user};
+    confess "failed to $mkdir" if system( $mkdir );
 
     $self->script( $path, sprintf 
         "exec setuidgid $user nice -n %d ionice -c %s %s 2>&1 || sleep %d",
             @run{ qw( nice ionice command wait ) } );
 
-    my $dir = './main';
-
-    $self->script( $log, "mkdir -p $dir", "chown -R $user $dir",
-        sprintf "exec setuidgid $user multilog t I s%d n%d $dir",
+    $self->script( $log, "mkdir -p $main", "chown -R $user $main",
+        sprintf "exec setuidgid $user multilog t I s%d n%d $main",
             @run{ qw( size keep ) } );
             
     if ( -l $link ) { warn "$name: already running\n" }
@@ -117,8 +116,8 @@ Kill service.
 sub kill
 {
     my $self = shift;
-    my ( $link, $path ) = @$self{ qw( link path ) };
-    system( "rm $link && svc -dx $path" );
+    my ( $link, $path, $log ) = @$self{ qw( link path mlog ) };
+    system( "rm $link && svc -dx $path && svc -dx $log" );
 }
 
 =head3 path()

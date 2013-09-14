@@ -5,23 +5,27 @@ use ExtUtils::MakeMaker;
 
 our %PREREQ_PM =
 (
-    'DBI' => 1.625,
-    'Expect' => 1.21,
-    'threads' => 1.80,
+    DBI => 1.625,
+    ## Dancer => 1.31,
+    ## Expect => 1.21,
+    threads => 1.80,
     'YAML::XS' => 0.41,
     'DBD::SQLite' => 1.37,
     'Getopt::Long' => 2.38,
     'Thread::Queue' => 2.12,
 );
 
+our $PKG_NAME = 'pantheon';
+our $PKG_FILE = "lib/$PKG_NAME.pm";
+
 WriteMakefile
 (
-    NAME          => 'pantheon',
     AUTHOR        => 'Kan Liu <kan@cpan.org>',
-    VERSION_FROM  => 'lib/pantheon.pm',
-    ABSTRACT_FROM => 'lib/pantheon.pm',
+    NAME          => $PKG_NAME,
+    VERSION_FROM  => $PKG_FILE,
+    ABSTRACT_FROM => $PKG_FILE,
     PREREQ_PM     => \%PREREQ_PM, 
     dist          => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean         => { FILES => [ qw( pantheon-* *.in *.ex ) ] },
+    clean         => { FILES => [ "$PKG_NAME-*", qw( *.in *.ex ) ] },
     ( $ExtUtils::MakeMaker::VERSION >= 6.3002 ? ( LICENSE => 'perl' ) : () ),
 );
