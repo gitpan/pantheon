@@ -1,3 +1,4 @@
+#!# perl: UPDATE
 use strict;
 use warnings;
 
@@ -15,12 +16,12 @@ our ( $HIST, $MAKE, $LIST, $INST ) = qw( Changes Makefile.PL MANIFEST INSTALL );
 
 =head3 update
 
- $0 [minor|major]
+ $0 [--minor|--major]
 
 =cut
 chdir $Bin;
 
-my $module = basename( $Bin ); $module =~ s/-[\d.]+$//g;
+my $module = File::Basename::basename( $Bin ); $module =~ s/-[\d.]+$//g;
 my $list = Vulcan::Manifest->new( $INST )->dump();
 my @inst = @{ $list->list( 'in' ) };
 
@@ -77,19 +78,19 @@ else
             ( $version = join '.', @version );
     }
 
-    my $time = POSIX::strftime( '%Y.%m.%d', localtime( ( stat $path )[9] ) );
-
     tie my @hist, 'Tie::File', $HIST;
+    my $tag = POSIX::strftime
+        ( "$version    %Y.%m.%d\n\n", localtime( ( stat $path )[9] ) );
+
     for ( my $i = 0; $i < @hist; $i ++ )
     {
-        next unless $hist[$i] =~ /^(\d+\S+)/;
-        last if $1 eq $version;
-        splice @hist, $i, 0, "$version    $time\n\n"; last;
+        next if $hist[$i] !~ /^(\d+\S+)/;
+        splice @hist, $i, 0, $tag if $1 ne $version;
+        untie @hist; last;
     }
-    untie @hist;
 
     ## manifest
-    if ( $version[-1] % 2 == 0 ) ## remove alpha for even version
+    unless ( $version[-1] % 2 ) ## remove alpha for even version
     {
         my @alpha = map { chomp; $_ =~ s/\s*#.+//; qr{^$_} }
             grep { $_ =~ /^[^-#]/ } `egrep '# *alpha' $INST`;

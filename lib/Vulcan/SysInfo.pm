@@ -55,6 +55,7 @@ sub new
     {
         for my $df ( map { [ ( split /\s+/, $_, 7 )[ 5, 1..4 ] ] } `df $_` )
         {
+            next unless $df->[0];
             map { $_ = $1 if $_ =~ /(\d+)%/ } @$df;
             push @data, $df;
         }
@@ -81,10 +82,14 @@ sub new
 
     if ( `which ethtool` ) ## ethtool: speed
     {
-        while ( my ( $iface, $data ) = each %{ $self{metric}{IFACE} } )
+        my $metric = $self{metric}{IFACE};
+        my %eth = map { split /\s+/, $_, 2 } `ifconfig | grep ^eth`;
+
+        while ( my ( $iface, $data ) = each %$metric )
         {
+            delete $metric->{$iface} unless $eth{$iface};
             my $info = `ethtool $iface | grep Speed`;
-            push @$data, $info && $info =~ /:\s(\d+\D+)\b/ ? $1 : '-'
+            push @$data, $info && $info =~ /:\s(\d+)\D+/ ? $1 : -1
         }
 
         push @{ $legend{IFACE} }, 'speed';
@@ -110,8 +115,7 @@ and I<legend> indexed by I<type>.
 sub info
 {
     my ( $self, $type ) = splice @_;
-    my ( $legend, $metric ) = @$self{ qw( legend metric ) };
-    my %info;
+    my ( $legend, $metric, %info ) = @$self{ qw( legend metric ) };
 
     if ( defined $type && ( $legend = $legend->{$type} ) )
     {

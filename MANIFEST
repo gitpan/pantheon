@@ -41,6 +41,7 @@ lib/MIO/SSH.pm
 lib/MIO/TCP.pm
 lib/Pan/Conf.pm
 lib/Pan/Macro.pm
+lib/Pan/Multicast.pm
 lib/Pan/Node.pm
 lib/Pan/Path.pm
 lib/Pan/RCS.pm
@@ -98,6 +99,7 @@ pantheon/tools/argos/map
 pantheon/tools/argos/reduce
 pantheon/tools/backup
 pantheon/tools/big
+pantheon/tools/caller
 pantheon/tools/daemon
 pantheon/tools/decruft
 pantheon/tools/fping-r
@@ -117,12 +119,13 @@ pantheon/tools/mssh
 pantheon/tools/poros/client
 pantheon/tools/poros/proxy
 pantheon/tools/range
-pantheon/tools/rotate
 pantheon/tools/seco/check
 pantheon/tools/seco/ctrl
 pantheon/tools/seco/dance
+pantheon/tools/seco/decruft
 pantheon/tools/seco/go
 pantheon/tools/seco/index
+pantheon/tools/seco/ntpsync
 pantheon/tools/sysinfo
 t/00-load.t
 t/boilerplate.t

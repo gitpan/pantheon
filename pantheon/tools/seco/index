@@ -19,5 +19,5 @@ use lib $seco{lib};
 use SECO::Index;
 
 $seco{interval} ||= 5;
-do { SECO::Index->run() } while $seco{daemon} && sleep $seco{interval};
+do { SECO::Index->new()->run() } while $seco{daemon} && sleep $seco{interval};
 exit 0;

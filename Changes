@@ -1,5 +1,15 @@
 Revision history for pantheon.
 
+0.26    2013.09.22
+
+0.25    2013.09.16
+        Pan::Multicast - new module, data distribution via multicast
+        Vulcan::SysInfo - bugfix
+        Cerew::DBI::Index - bug fix
+        pantheon/tools/seco/ntpsync - new tools
+        pantheon/tools/seco/decruft - new tools
+        pantheon/tools/caller - new tools
+
 0.24    2013.09.14
 
 0.23    2013.09.09

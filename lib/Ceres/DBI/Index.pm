@@ -61,7 +61,7 @@ sub update
     $self->delete( $TABLE, host => [ 0, $host ], key => [ 1, $key ] );
     $self->delete( $TABLE, host => [ 1, $host ], key => [ 0, $key ] );
 
-    my ( $record ) = $self->select( $TABLE, host => [ 1, $host ] );
+    my ( $record ) = $self->select( $TABLE => '*', host => [ 1, $host ] );
     $self->insert( $TABLE, $host, $key, $md5 )
         unless $record && $record->[2] eq $md5;
 }
@@ -78,7 +78,7 @@ sub index
     my %query = ( host => [ 1, $host ] );
 
     $query{md5} = [ 0, $md5 ] if defined $md5;
-    my ( $record ) = $self->select( $TABLE, '*', %query );
+    my ( $record ) = $self->select( $TABLE => '*', %query );
     return $record ? substr $record->[1], -2, 2 : undef;
 }
 

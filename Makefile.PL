@@ -13,6 +13,7 @@ our %PREREQ_PM =
     'DBD::SQLite' => 1.37,
     'Getopt::Long' => 2.38,
     'Thread::Queue' => 2.12,
+    'IO::Socket::Multicast' => 1.12,
 );
 
 our $PKG_NAME = 'pantheon';
