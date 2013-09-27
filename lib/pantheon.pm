@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.26';
+our $VERSION = '0.28';
 
 =head1 MODULES
 
@@ -108,6 +108,7 @@ A suite of utility modules
  Vulcan::Mrsync
  Vulcan::Cruft
  Vulcan::Grep
+ Vulcan::Sort
  Vulcan::Sudo
  Vulcan::Manifest
 

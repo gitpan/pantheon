@@ -1,0 +1,85 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use YAML::XS;
+use File::Basename;
+
+use Hermes;
+use Argos::Path;
+use Argos::Conf;
+use Vulcan::OptConf;
+use Vulcan::Sudo;
+
+Vulcan::Sudo->sudo();
+
+$| ++;
+
+$Vulcan::OptConf::THIS = 'argos';
+
+=head1 SYNOPSIS
+
+watch argos map output.
+
+$0 [--interval I<num>]
+
+=cut
+my $option = Vulcan::OptConf->load();
+my %o = $option->set( interval => 2 )->get( "interval=i" )->dump();
+
+my $path = Argos::Path->new( $o{path} );
+my $conf = Argos::Conf->new( $o{map} );
+
+my $range = Hermes->new( $option->dump( 'range' ) );
+my $db = $range->db();
+
+do
+{
+    my ( %file, %data, %cluster ) = map { $_ => 1 }
+        map { glob $path->path( run => "$_.*" ) } $conf->names();
+
+    for my $file ( keys %file )
+    {
+        my $data = YAML::XS::LoadFile( $file );
+        my $name = File::Basename::basename( $file );
+        my %dup;
+
+        while ( my ( $mesg, $node ) = each %$data ) 
+        {
+            my %sort;
+
+            for my $node ( @$node )
+            {
+                if ( ref $node )
+                {
+                    push @{ $sort{ $node->[1] } }, $node->[0]
+                        unless $dup{ $node->[0] } ++;
+                }
+                else
+                {
+                    $node =~ s/:\d+$//g;
+
+                    my %name = map { $_ => 1 } map { @$_ }
+                        $db->select( 'name', node => [ 1, $node ] ),
+                        $db->select( 'name', info => [ 1, $node ] );
+
+                    $cluster{$node} ||= %name
+                        ? [ keys %name ] : [ 'unknown cluster' ];
+
+                    map { push @{ $sort{$_} }, $node } @{ $cluster{$node} };
+                }
+            }
+
+            $mesg = YAML::XS::Load( $mesg ) if $mesg =~ /^---/;
+            %sort = map { $_ => $range->load( $sort{$_} )->dump } keys %sort;
+            push @{ $data{$name} }, { node => \%sort, mesg => $mesg };
+        }
+    }
+
+    system( 'clear' );
+    YAML::XS::DumpFile( \*STDOUT, \%data );
+}
+while sleep $o{interval};
+
+exit 0;

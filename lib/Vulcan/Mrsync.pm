@@ -28,7 +28,9 @@ Vulcan::Mrsync - Replicate data via phased rsync
 =cut
 use strict;
 use warnings;
+
 use Carp;
+use File::Basename;
 
 use base qw( Vulcan::Phasic );
 
@@ -44,12 +46,14 @@ sub new
     $dp = $sp unless $dp;
 
     croak "path not defined" unless $sp;
-    $dp .= '/' if $sp =~ /\/$/ && $dp !~ /\/$/;
+
+    if ( $sp =~ /\/$/ ) { $dp .= '/' if $dp !~ /\/$/ }
+    elsif ( $dp =~ /\/$/ ) { $dp .= File::Basename::basename( $sp ) }
 
     my $w8 = sub 
     {
-        my $w8 = unpack 'N', join '', my @addr = ( gethostbyname shift )[-1];
-        $w8 ||= 0;
+        my @addr = gethostbyname shift;
+        return @addr ? unpack N => $addr[-1] : 0;
     };
 
     my $rsync = sub

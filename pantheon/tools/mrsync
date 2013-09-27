@@ -23,7 +23,6 @@ my %o = $option->set( retry => 2, timeout => 300, src => hostname() )
     ->get( qw( src=s dst=s sp=s dp=s timeout=i max=i retry=i ) )->dump();
 
 my $range = Hermes->new( $option->dump( 'range' ) );
-
 my $mrsync = Vulcan::Mrsync->new
 (
     ( map { $_ => delete $o{$_} } qw( sp dp ) ),

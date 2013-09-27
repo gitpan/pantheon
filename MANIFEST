@@ -58,10 +58,12 @@ lib/Vulcan/Grep.pm
 lib/Vulcan/Logger.pm
 lib/Vulcan/Manifest.pm
 lib/Vulcan/Mrsync.pm
+lib/Vulcan/NetMap.pm
 lib/Vulcan/OptConf.pm
 lib/Vulcan/Phasic.pm
 lib/Vulcan/ProcLock.pm
 lib/Vulcan/SQLiteDB.pm
+lib/Vulcan/Sort.pm
 lib/Vulcan/Sudo.pm
 lib/Vulcan/Symlink.pm
 lib/Vulcan/SysInfo.pm
@@ -97,6 +99,7 @@ pantheon/tools/alarm
 pantheon/tools/argos/ctrl
 pantheon/tools/argos/map
 pantheon/tools/argos/reduce
+pantheon/tools/argos/watch
 pantheon/tools/backup
 pantheon/tools/big
 pantheon/tools/caller

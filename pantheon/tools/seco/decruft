@@ -28,18 +28,20 @@ do
 
     while ( my ( $path, $conf ) = each %$conf )
     {
-        my $cruft = Vulcan::Cruft->new( $path );
-        my @cut;
-
-        if ( -f $path )
+        for my $path ( glob $path )
         {
-            $cruft->cut( %$conf );
-            @cut = Vulcan::Cruft->new( File::Basename::dirname( $path ) )
-                ->cruft( %$conf ) if $conf->{age};
-        }
-        else { @cut = $cruft->cruft( %$conf ) }
+            my ( $cruft, @cut ) = Vulcan::Cruft->new( $path );
 
-        warn join "\n", 'removed', sort( @cut ), "\n" if unlink @cut;
+            if ( -f $path )
+            {
+                $cruft->cut( %$conf );
+                @cut = Vulcan::Cruft->new( File::Basename::dirname( $path ) )
+                    ->cruft( %$conf ) if $conf->{age};
+            }
+            else { @cut = $cruft->cruft( %$conf ) }
+
+            warn join "\n", 'removed', sort( @cut ), "\n" if unlink @cut;
+        }
     }
 } while $o{daemon} && sleep $cycle;
 

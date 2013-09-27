@@ -108,8 +108,8 @@ Rotate files according to %param. Returns a hash of results.
 sub cut
 {
     my ( $self, %param, %cut ) = splice @_;
-    my ( $block, $size ) = map { $self->convert( $param{$_} || $CUT{$_} ) }
-        qw( block size );
+    my ( $block, $size ) = map
+        { $self->convert( size => $param{$_} || $CUT{$_} ) } qw( block size );
 
     $block = $size if $size < $block;
 
