@@ -13,7 +13,6 @@ use Pan::Macro;
 Move regular file I<$src> to I<$dst>.  The following may be defined in
 I<%option>, which are be apply to $src I<before> moving $src to $dst.
 
-
  patch : path of patch
  macro : list of macros to replace
  chown : ownership

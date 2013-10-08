@@ -26,7 +26,7 @@ $0 [--interval I<num>]
 
 =cut
 my $option = Vulcan::OptConf->load();
-my %o = $option->set( interval => 2 )->get( "interval=i" )->dump();
+my %o = $option->set( interval => 10 )->get( qw( interval=i count ) )->dump();
 
 my $path = Argos::Path->new( $o{path} );
 my $conf = Argos::Conf->new( $o{map} );
@@ -36,7 +36,7 @@ my $db = $range->db();
 
 do
 {
-    my ( %file, %data, %cluster ) = map { $_ => 1 }
+    my ( %file, %data, %cluster, %sum ) = map { $_ => 1 }
         map { glob $path->path( run => "$_.*" ) } $conf->names();
 
     for my $file ( keys %file )
@@ -54,7 +54,7 @@ do
                 if ( ref $node )
                 {
                     push @{ $sort{ $node->[1] } }, $node->[0]
-                        unless $dup{ $node->[0] } ++;
+                        unless $dup{$mesg}{ $node->[0] } ++;
                 }
                 else
                 {
@@ -72,11 +72,23 @@ do
             }
 
             $mesg = YAML::XS::Load( $mesg ) if $mesg =~ /^---/;
-            %sort = map { $_ => $range->load( $sort{$_} )->dump } keys %sort;
+
+            for my $cluster ( keys %sort )
+            {
+                $range->load( delete $sort{$cluster} );
+                if ( $o{count} )
+                {
+                    $sum{$name} += my $count = $range->list();
+                    $cluster .= sprintf " [%s]", $count;
+                }
+                $sort{$cluster} = $range->dump();
+            }
+
             push @{ $data{$name} }, { node => \%sort, mesg => $mesg };
         }
     }
 
+    map { $data{ "$_ ($sum{$_})" } = delete $data{$_} } keys %data if $o{count};
     system( 'clear' );
     YAML::XS::DumpFile( \*STDOUT, \%data );
 }

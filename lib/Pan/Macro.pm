@@ -1,4 +1,4 @@
-package Pan::Macro;
+package Pan::Macro; ## macros to be implemented
 
 =head1 NAME
 

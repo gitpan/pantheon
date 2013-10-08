@@ -120,6 +120,21 @@ sub kill
     system( "rm $link && svc -dx $path && svc -dx $log" );
 }
 
+=head3 tail( $number )
+
+Tail service log
+
+=cut
+sub tail
+{
+    my ( $self, $count ) = splice @_;
+    my $log = $self->{mlog};
+    my $tail = "tail $log/main/current";
+
+    $tail .= $count =~ /^\d+$/ ? " -n $count" : ' -f' if $count;
+    system( "$tail | tai64nlocal" );
+}
+
 =head3 path()
 
 Service path.

@@ -1,5 +1,22 @@
 Revision history for pantheon.
 
+0.30    2013.10.08
+
+0.29    2013.09.29
+        SECO::Ctrl - new feature, poll data count
+        SECO::Conf - reorganize replica, interface change *
+        Vulcan::Daemon - new feature, tail service log
+        pantheon/poros/code/seco - new plugin
+        pantheon/argos/code/m.ssh - new plugin
+        pantheon/argos/code/m.http - new feature, interface change *
+        pantheon/argos/code/b.seco - new feature
+        pantheon/argos/code/r.seco - bugfix
+        pantheon/tools/argos/watch - bugfix
+        pantheon/tools/daemon - new feature
+        pantheon/tools/mssh - minor change
+        pantheon/tools/seco/dance - SECO::Conf
+        pantheon/hermes/callback/seco - SECO::Conf
+
 0.28    2013.09.27
 
 0.27    2013.09.23

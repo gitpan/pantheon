@@ -15,7 +15,7 @@ $| ++;
 
 $Vulcan::OptConf::ARGC = 1;
 
-my %o = Vulcan::OptConf->load()->get( qw( run kill ) )->dump();
+my %o = Vulcan::OptConf->load()->get( qw( run kill tail=s ) )->dump();
 my $daemon = Vulcan::Daemon->new( %o, name => basename( shift ) );
 
 =head1 SYNOPSIS
@@ -35,6 +35,13 @@ if ( $o{run} ) { $daemon->run() }
 
 =cut
 elsif ( $o{kill} ) { $daemon->kill() }
+
+=head3 tail
+
+ $0 name --tail number
+
+=cut
+elsif ( $o{tail} ) { $daemon->tail( $o{tail} ) }
 
 =head3 status
 

@@ -17,9 +17,13 @@ use SECO::Conf;
 
 get "/hostlist/:cluster" => sub
 {
-    my ( $output, $i ) = ( '', 1 );
-    map { $output .= join( ':', $_, $i ++ ) . "\n" }
-        loadconf( params()->{cluster} )->list( 'host' );
+    my $output = '';
+    if ( my ( $conf, $replica ) = loadconf( params()->{cluster} ) )
+    {
+        my $i = 1;
+        map { $output .= join( ':', $_, $i ++ ) . "\n" }
+            $conf->list( host => $replica );
+    }
     return $output;
 };
 
@@ -28,33 +32,22 @@ get "/seconfig/:cluster" => sub
     my $output = '';
     for my $cluster ( split ',', params()->{cluster} )
     {
+        next unless my ( $conf, $replica ) = loadconf( $cluster );
         my $i = 1;
         map { $output .= join( ':', @$_, $i ++ ) . "\n" }
-            loadconf( $cluster )->dump( 'seco' );
+            $conf->dump( seco => $replica );
     }
     return $output;
-};
-
-get "/seco/:host" => sub
-{
-    my $host = params()->{host};
-
-    for my $conf ( glob File::Spec->join( $seco{conf}, '*' ) )
-    {
-        my ( $name, $zone ) = split '@', $conf;
-        my $host = $zone && $host =~ /^(.+)\.$zone/ ? $1 : $host;
-
-        return $conf unless system "grep -q $host $conf";
-    }
 };
 
 dance;
 
 sub loadconf
 {
-    my $zone = shift;
+    my $conf = shift;
     my $domain = $SECO::Conf::DOMAIN;
 
-    $zone =~ s/$domain$// if $zone =~ /$domain$/;
-    return SECO::Conf->load( File::Spec->join( $seco{conf}, $zone ) );
+    return () unless $conf =~ s/(\d+)@/@/; $conf =~ s/$domain$//;
+    eval { $conf = SECO::Conf->load( File::Spec->join( $seco{conf}, $conf ) ) };
+    return $@ ? () : ( $conf, $1 );
 }

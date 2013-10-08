@@ -21,8 +21,10 @@ return sub
 
     for ( glob File::Spec->join( $seco{conf}, '*' ) )
     {
-        my $host = eval { SECO::Conf->load( $_ )->list( host => 0 ) };
-        $cluster{ basename( $_ ) } = $host unless $@;
+        next unless my $conf = eval { SECO::Conf->load( $_ ) };
+        my ( $name, $dc ) = $conf->name();
+        map { $cluster{ "$name$_\@$dc" } = $conf->list( host => $_ ) }
+            1 .. $conf->replica();
     }
     return \%cluster;
 };
