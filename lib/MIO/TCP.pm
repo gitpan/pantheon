@@ -137,7 +137,7 @@ sub run
 
         for my $sock ( $poll->handles( POLLOUT ) ) ## write
         {
-            syswrite $sock, $input;
+            syswrite $sock, $input if defined $input;
             $poll->mask( $sock, $poll->mask( $sock ) & ~POLLOUT );
             shutdown $sock, 1;
         }
@@ -146,9 +146,7 @@ sub run
         {
             my $node = delete $busy{$sock};
 
-            push @{ $result{mesg}{ delete $buffer{$sock} } }, $node
-                if length $buffer{$sock};
-
+            push @{ $result{mesg}{ delete $buffer{$sock} } }, $node;
             $poll->remove( $sock );
             shutdown $sock, 0;
             print $log "$node done.\n";

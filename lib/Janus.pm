@@ -100,7 +100,6 @@ See Janus::Path.
 
     confess "$error: $@" if $@;
     confess "$error: not CODE" unless $batch && ref $batch eq 'CODE';
-
     bless \%self, ref $class || $class;
 }
 

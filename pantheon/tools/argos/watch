@@ -22,11 +22,11 @@ $Vulcan::OptConf::THIS = 'argos';
 
 watch argos map output.
 
-$0 [--interval I<num>]
+$0 [--interval I<num>] [--count]
 
 =cut
 my $option = Vulcan::OptConf->load();
-my %o = $option->set( interval => 10 )->get( qw( interval=i count ) )->dump();
+my %o = $option->set( interval => 2 )->get( qw( interval=i count ) )->dump();
 
 my $path = Argos::Path->new( $o{path} );
 my $conf = Argos::Conf->new( $o{map} );
@@ -41,8 +41,10 @@ do
 
     for my $file ( keys %file )
     {
-        my $data = YAML::XS::LoadFile( $file );
-        my $name = File::Basename::basename( $file );
+        next unless my $data = eval { YAML::XS::LoadFile( $file ) };
+        my @name = split '\.', File::Basename::basename( $file );
+        my $stat = pop @name; 
+        my $name = join '.', @name;
         my %dup;
 
         while ( my ( $mesg, $node ) = each %$data ) 
@@ -78,19 +80,34 @@ do
                 $range->load( delete $sort{$cluster} );
                 if ( $o{count} )
                 {
-                    $sum{$name} += my $count = $range->list();
+                    $sum{$stat}{$name} += my $count = $range->list();
                     $cluster .= sprintf " [%s]", $count;
                 }
                 $sort{$cluster} = $range->dump();
             }
 
-            push @{ $data{$name} }, { node => \%sort, mesg => $mesg };
+            push @{ $data{$stat}{$name} }, { node => \%sort, mesg => $mesg };
         }
     }
 
-    map { $data{ "$_ ($sum{$_})" } = delete $data{$_} } keys %data if $o{count};
+    if ( $o{count} )
+    {
+        for my $stat ( keys %data )
+        {
+            my $data = delete $data{$stat};
+            my $sum = 0;
+
+            for my $name ( keys %$data )
+            {
+                $sum += my $count = $sum{$stat}{$name};
+                $data->{ "$name ($count)" } = delete $data->{$name};
+            }
+            $data{ "$stat ($sum)" } = $data;
+        }
+    }
+
     system( 'clear' );
-    YAML::XS::DumpFile( \*STDOUT, \%data );
+    YAML::XS::DumpFile( \*STDOUT, \%data ) if %data;
 }
 while sleep $o{interval};
 

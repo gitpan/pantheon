@@ -126,7 +126,6 @@ Replace $RealBin and $Bin in $path
 sub macro
 {
     my ( $self, $path ) = splice @_;
-
     if ( $path )
     {
         $path =~ s/\$Bin\b/$Bin/g; $path =~ s/\$RealScript\b/$RealScript/g;
@@ -134,7 +133,6 @@ sub macro
         $path =~ s/\$Script\b/$Script/g; $path =~ s/\$RealBin\b/$RealBin/g;
         $path =~ s/\${Script}/$Script/g; $path =~ s/\${RealBin}/$RealBin/g;
     }
-
     return $path;
 }
 

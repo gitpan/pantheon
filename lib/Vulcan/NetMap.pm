@@ -54,9 +54,12 @@ sub load
         while ( my ( $net, $mask ) = each %$conf )
         {
             my $error = "$error: $net";
+
             confess "$error: invalid subnet" unless $net = $class->ip2n( $net );
-            confess "$error: invalid netmask" unless $self{$dc}{$net} =
-                ( $mask{$mask} ||= $class->mask( $mask ) );
+            confess "$error: invalid netmask"
+                unless $mask{$mask} ||= $class->mask( $mask );
+
+            $self{$dc}{ $net & $mask{$mask} } = $mask{$mask};
         }
     }
     bless \%self, ref $class || $class;

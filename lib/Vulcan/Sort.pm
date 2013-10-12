@@ -35,7 +35,8 @@ Sort @array by each dimension in @dim. Returns sorted array.
 sub run
 {
     my ( $self, $list, %sort ) = splice @_, 0, 2;
-    my @sort = defined $list ? ref $list && $list->isa( 'ARRAY' )
+    my @sort = defined $list
+        ? ref $list && ( ref $list eq 'ARRAY' || $list->isa( 'ARRAY' ) )
         ? $self->h2a( $self->a2h( $list, @_ ) ) : confess 'invalid list' : ();
     return wantarray ? @sort : \@sort;
 }
