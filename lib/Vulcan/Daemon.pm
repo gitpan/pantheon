@@ -34,16 +34,11 @@ I<required>:
 I<optional>, default to ( ):
 
  user: ( nobody ) setuidgid user.
- nice: ( 19 ) nice -n value.
- ionice: ( 3 ) ionice -c value.
- wait: ( 20 ) sleep a few seconds after a failed launch.
-
  size: ( 10000000 ) multilog S value
  keep: ( 5 ) multilog N value
 
 =cut
-our %RUN = ( user => 'nobody', wait => 20, nice => 19, ionice => 3 );
-our %LOG = ( size => 10000000, keep => 5 );
+our %RUN = ( user => 'nobody', size => 10000000, keep => 5 );
 
 =head1 SYNOPSIS
 
@@ -87,19 +82,19 @@ Set up and launch service.
 sub run
 {
     my $self = shift;
-    my %run = ( %RUN, %LOG, %{ $self->{conf} } );
+    my %run = ( %RUN, %{ $self->{conf} } );
     my ( $name, $link, $path, $log ) = @$self{ qw( name link path mlog ) };
 
     my $mkdir = "mkdir -p $log";
     my $user = delete $run{user};
     my $main = './main';
+    my %nice = ( nice => '-n', ionice => '-c' );
+    my @nice = map { "$_ $nice{$_} $run{$_}" }
+        grep { defined $run{$_} } keys %nice;
 
-    confess "failed to $mkdir" if system( $mkdir );
+    confess "failed to $mkdir" if system $mkdir;
 
-    $self->script( $path, sprintf 
-        "exec setuidgid $user nice -n %d ionice -c %s %s 2>&1 || sleep %d",
-            @run{ qw( nice ionice command wait ) } );
-
+    $self->script( $path, "exec @nice setuidgid $user $run{command} 2>&1" );
     $self->script( $log, "mkdir -p $main", "chown -R $user $main",
         sprintf "exec setuidgid $user multilog t I s%d n%d $main",
             @run{ qw( size keep ) } );

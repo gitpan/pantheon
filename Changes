@@ -1,5 +1,27 @@
 Revision history for pantheon.
 
+0.34    2013.10.19
+
+0.33    2013.10.13
+        Vulcan::Cruft - new feature, count for cut()
+        Vulcan::Mrsync - new feature, parametrize nice *1
+        Vulcan::Daemon - bugfix
+        MIO - new module, interface *2
+        MIO::UDP - new module 
+        MIO::TCP - error on connect() failure, rework with IO::Socket
+        MIO::CMD - *2
+        MIO::SSH - *2
+        Hermes::Object - add clone() *3
+        Hermes::KeySet - remove clone() *3
+        Hermes::Integer - new module *3
+        Pan::Macro - temporarily removed
+        pantheon/argos/code/m.port - new plugin  *4
+        pantheon/argos/code/m.ssh - removed, replaced by m.port *4
+        pantheon/poros/code/grep - chop command output
+        pantheon/tools/seco/dance - bugfix
+        pantheon/tools/hermes/cache - bugfix
+        pantheon/tools/mrsync - new feature *1
+
 0.32    2013.10.12
 
 0.31    2013.10.09

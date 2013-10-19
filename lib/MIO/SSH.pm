@@ -11,8 +11,8 @@ MIO::SSH - Run multiple SSH commands in parallel.
  my @node = qw( host1 host2 ... );
  my @cmd = qw( uptime );
 
- my $mssh = MIO::SSH->new( map { $_ => \@cmd } @node );
- my $result = $mssh->run( max => 32, timeout => 300 );
+ my $ssh = MIO::SSH->new( map { $_ => \@cmd } @node );
+ my $result = $ssh->run( max => 32, timeout => 300 );
 
  my $output = $result->{output};
  my $error = $result->{error};
@@ -28,20 +28,17 @@ use Fcntl qw( :flock );
 use POSIX qw( :sys_wait_h );
 use FindBin qw( $Script );
 
-local $| = 1;
+use base qw( MIO );
 
-our %RUN = ( max => 32, timeout => 300 );
+our %RUN = %MIO::RUN;
 our $SSH = 'ssh -o StrictHostKeyChecking=no -c blowfish';
+
+local $| = 1;
 
 sub new
 {
-    my ( $class, %self, %ok ) = splice @_;
-    while ( my ( $node, $cmd ) = each %self )
-    {
-        confess "command undefined for $node" unless $cmd;
-        $self{$node} = $ok{$cmd} ||= ref $cmd ? $cmd : [ $cmd ];
-    }
-    bless \%self, ref $class || $class;
+    my $self = shift;
+    $self->cmd( @_ );
 }
 
 =head1 METHODS
@@ -51,7 +48,7 @@ sub new
 Run ssh commands in parallel.
 The following parameters may be defined in I<%param>:
 
- max : ( default 32 ) number of commands in parallel.
+ max : ( default 128 ) number of commands in parallel.
  timeout : ( default 300 ) number of seconds allotted for each command.
  sudo : ( default no sudo ) remote sudo user
  user : ( default logname ) connect as user
@@ -99,17 +96,8 @@ sub run
             $ssh .= "sudo -p '$prompt' -u $sudo " if $sudo;
             $ssh .= join ' ', @cmd;
 
-            if ( $run{noop} )
-            {
-                warn "$ssh\n";
-                next;
-            }
-
-            if ( my $pid = fork() )
-            {
-                $busy{$pid} = [ $log, $node ];
-                next;
-            }
+            if ( $run{noop} ) { warn "$ssh\n"; next }
+            if ( my $pid = fork() ) { $busy{$pid} = [ $log, $node ]; next }
             
             my $exp = Expect->new();
             my $login = sub { $exp->send( $pass ); exp_continue };

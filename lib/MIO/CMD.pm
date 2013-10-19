@@ -11,8 +11,8 @@ MIO::CMD - Run multiple commands in parallel.
  my @node = qw( host1 host2 ... );
  my @cmd = qw( ssh {} wc );
 
- my $mcmd = MIO::CMD->new( map { $_ => \@cmd } @node );
- my $result = $mcmd->run( max => 32, log => \*STDERR, timeout => 300 );
+ my $cmd = MIO::CMD->new( map { $_ => \@cmd } @node );
+ my $result = $cmd->run( max => 32, log => \*STDERR, timeout => 300 );
 
  my $stdout = $result->{stdout};
  my $stderr = $result->{stderr};
@@ -28,19 +28,15 @@ use Time::HiRes qw( time );
 use POSIX qw( :sys_wait_h );
 use IO::Poll qw( POLLIN POLLHUP POLLOUT );
 
-use constant { MAXBUF => 4096, PERIOD => 0.1 };
+use base qw( MIO );
 
-our %RUN = ( max => 32, timeout => 300, log => \*STDERR );
+our %RUN = %MIO::RUN;
+our %MAX = %MIO::MAX;
 
 sub new
 {
-    my ( $class, %self, %ok ) = splice @_;
-    while ( my ( $node, $cmd ) = each %self )
-    {
-        confess "command undefined for $node" unless $cmd;
-        $self{$node} = $ok{$cmd} ||= ref $cmd ? $cmd : [ $cmd ];
-    }
-    bless \%self, ref $class || $class;
+    my $self = shift;
+    $self->cmd( @_ );
 }
 
 =head1 METHODS
@@ -50,7 +46,7 @@ sub new
 Run commands in parallel.
 The following parameters may be defined in I<%param>:
 
- max : ( default 32 ) number of commands in parallel.
+ max : ( default 128 ) number of commands in parallel.
  log : ( default STDERR ) a handle to report progress.
  timeout : ( default 300 ) number of seconds allotted for each command.
  input : ( default from STDIN ) input buffer.
@@ -123,11 +119,11 @@ sub run
             print $log "$node started.\n";
         }
 
-        $poll->poll( PERIOD );
+        $poll->poll( $MAX{period} );
 
         for my $fh ( $poll->handles( POLLIN ) ) ## stdout/stderr
         {
-            sysread $fh, my $buffer, MAXBUF;
+            sysread $fh, my $buffer, $MAX{buffer};
             $buffer{$fh} .= $buffer;
         }
 

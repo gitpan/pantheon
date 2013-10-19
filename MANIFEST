@@ -25,6 +25,7 @@ lib/Hermes/Cache.pm
 lib/Hermes/Call.pm
 lib/Hermes/DBI/Cache.pm
 lib/Hermes/DBI/Root.pm
+lib/Hermes/Integer.pm
 lib/Hermes/KeySet.pm
 lib/Hermes/Object.pm
 lib/Hermes/Range.pm
@@ -36,11 +37,12 @@ lib/Janus/Path.pm
 lib/Janus/Sequence.pm
 lib/Janus/Sequence/Code.pm
 lib/Janus/Sequence/Conf.pm
+lib/MIO.pm
 lib/MIO/CMD.pm
 lib/MIO/SSH.pm
 lib/MIO/TCP.pm
+lib/MIO/UDP.pm
 lib/Pan/Conf.pm
-lib/Pan/Macro.pm
 lib/Pan/Multicast.pm
 lib/Pan/Node.pm
 lib/Pan/Path.pm

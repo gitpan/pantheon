@@ -17,10 +17,6 @@ use Ceres::DBI::Index;
 
 use constant MAXBUF => 65;
 
-sub new 
-{
-    my ( $class, %self ) = splice @_;
-
 =head1 CONFIGURATION
 
 =head3 port
@@ -32,28 +28,33 @@ UDP port to listen on
 database path
 
 =cut
-    map { $self{$_} || confess "$_ not defined" } qw( port dbpath );
+sub new 
+{
+    my ( $class, %self ) = splice @_;
+    map { $self{$_} || confess "$_ not defined" } qw( dbpath port );
+    bless \%self, ref $class || $class;
+}
 
-    confess "Cannot create socket: $@" unless my $sock =
-        IO::Socket::INET->new( LocalPort => $self{port}, Proto => 'udp' );
-
-    my $db = Ceres::DBI::Index->new( $self{dbpath} || $self{db} );
+sub run
+{
+    my $self = shift;
+    my $db = Ceres::DBI::Index->new( $self->{dbpath} ),
     my $queue = Thread::Queue->new();
-    my %host;
+    my $sock = IO::Socket::INET->new( LocalPort => $self->{port}, Proto => 'udp' );
 
     threads::async
     {
         while ( $sock->recv( my $msg, MAXBUF ) )
         {
-            $queue->enqueue( $1, $2, $sock->peername )
+            $queue->enqueue( $sock->peername, $1, $2 )
                 if $msg =~ /^([0-9a-f]{32}):([0-9a-f]{32})$/;
         }
     }->detach;
 
-    while ( my ( $key, $md5, $peer ) = $queue->dequeue( 3 ) )
+    while ( my @info = $queue->dequeue( 3 ) )
     {
-        $db->update( $host{$peer}, $key, $md5 ) if $host{$peer} ||=
-            gethostbyaddr( ( sockaddr_in $peer )[1], AF_INET );
+        $db->update( @info ) if
+            $info[0] = gethostbyaddr( ( sockaddr_in $info[0] )[1], AF_INET );
     }
 }
 

@@ -81,10 +81,7 @@ sub lock
 Returns file handle of object.
 
 =cut
-sub handle
-{
-    return ${ shift @_ };
-}
+sub handle { return ${ shift @_ } }
 
 =head3 read()
 

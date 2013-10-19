@@ -16,10 +16,6 @@ use Digest::MD5;
 
 our $CYCLE = 120;
 
-sub new 
-{
-    my ( $class, %self ) = splice @_;
-
 =head1 CONFIGURATION
 
 =head3 index
@@ -35,6 +31,9 @@ path of the code file
 path to dump data
 
 =cut
+sub new 
+{
+    my ( $class, %self ) = splice @_;
     map { $self{$_} || confess "$_ not defined" } qw( index code data );
     bless \%self, ref $class || $class;
 }

@@ -56,17 +56,9 @@ sub make
         $self->syscmd( "ln -s $path $link" );
     }
 
-    if ( $< )
-    {
-    }
-    elsif ( $chown )
-    {
-        $self->syscmd( "chown -h $chown $link" );
-    }
-    elsif ( -e $path )
-    {
-        chown( ( stat $path )[4,5], $link );
-    }
+    if ( $< ) { }
+    elsif ( $chown ) { $self->syscmd( "chown -h $chown $link" ) }
+    elsif ( -e $path ) { chown( ( stat $path )[4,5], $link ) }
 
     $self->chdir();
     return $self;
@@ -97,7 +89,7 @@ sub readlink
 sub chdir
 {
     my $self = shift;
-    my $dir = $self->{  @_ ? shift : 'cwd' };
+    my $dir = $self->{ @_ ? shift : 'cwd' };
     confess "failed to cd $dir" unless chdir $dir;
 }
 

@@ -44,10 +44,10 @@ dance;
 
 sub loadconf
 {
-    my $conf = shift;
     my $domain = $SECO::Conf::DOMAIN;
+    my $conf = shift; $conf =~ s/$domain$//;
 
-    return () unless $conf =~ s/(\d+)@/@/; $conf =~ s/$domain$//;
+    return () unless $conf =~ s/(\d+)@/@/;
     eval { $conf = SECO::Conf->load( File::Spec->join( $seco{conf}, $conf ) ) };
     return $@ ? () : ( $conf, $1 );
 }

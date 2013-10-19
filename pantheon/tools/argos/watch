@@ -42,10 +42,9 @@ do
     for my $file ( keys %file )
     {
         next unless my $data = eval { YAML::XS::LoadFile( $file ) };
-        my @name = split '\.', File::Basename::basename( $file );
+        my ( @name, %dup ) = split '\.', File::Basename::basename( $file );
         my $stat = pop @name; 
         my $name = join '.', @name;
-        my %dup;
 
         while ( my ( $mesg, $node ) = each %$data ) 
         {

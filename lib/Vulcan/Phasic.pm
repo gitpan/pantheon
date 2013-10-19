@@ -94,7 +94,6 @@ sub run
                         next unless $queue[0]->pending();
                         last if ( $src, $dst ) = $queue[0]->dequeue_nb( 2 );
                     }
-
                     $info = &$code( $src, $dst, %run );
                 };
                 if ( $@ ) { $ok = 0; $info = $@ }

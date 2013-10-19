@@ -47,17 +47,6 @@ sub new
 
 =head1 DATA METHODS
 
-=head3 clone()
-
-Returns a cloned object.
-
-=cut
-sub clone
-{
-    my $self = shift;
-    my $clone = $self->new()->load( $self );
-}
-
 =head3 get( $o )
 
 Returns a list of elements of a supported object.
@@ -69,7 +58,7 @@ sub get
     my $ref = ref $o;
 
     return $ref eq 'ARRAY' ? @$o : $ref eq 'HASH' ? keys %$o :
-        $ref eq 'Regexp' ? grep { $_ =~ $o } keys %{ $self->{set} } :
+        $ref eq 'Regexp' ? grep { $_ =~ $o } $self->list :
         $self->isa( $ref ) ? $o->list :
         confess( "cannot operate on unknown type: $ref" );
 }

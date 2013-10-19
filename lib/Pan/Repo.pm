@@ -23,24 +23,21 @@ use Pan::Path;
 use Pan::Conf;
 use Pan::Transform;
 
-sub new 
-{
-    my ( $class, %self, %code, %conf ) = splice @_;
-
 =head1 CONFIGURATION
 
 =head3 conf
 
 See Pan::Conf.
 
-=cut
-    my $conf = Pan::Conf->new( $self{conf} );
-
 =head3 path
 
 See Pan::Path.
 
 =cut
+sub new 
+{
+    my ( $class, %self, %code, %conf ) = splice @_;
+    my $conf = Pan::Conf->new( $self{conf} );
     my $path = $self{path} = Pan::Path->new( $self{path} )->make();
     my $name = $self{group};
 
@@ -52,10 +49,9 @@ See Pan::Path.
         for my $i ( 0 .. @$transform - 1 )
         {
             my $t = $transform->[$i];
-            my $code = $code{$t} ||= Pan::Transform->new
-            (
-                map { $_ => $path->path( $_ => $t ) } qw( code conf )
-            );
+            my $code = $code{$t} ||= Pan::Transform
+                ->new( map { $_ => $path->path( $_ => $t ) } qw( code conf ) );
+
             confess "transform $t: $name undefined"
                 unless $transform->[$i] = $code->dump( $name );
         }

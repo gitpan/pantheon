@@ -27,6 +27,17 @@ use overload
 
 =head1 METHODS
 
+=head3 clone()
+
+Returns a cloned object. Requires a load() method.
+
+=cut
+sub clone
+{
+    my $self = shift;
+    my $clone = $self->new()->load( $self );
+}
+
 =head3 assign()
 
 Overloads B<=>. Returns the object itself.

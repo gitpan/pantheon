@@ -34,7 +34,7 @@ use File::Basename;
 
 use base qw( Vulcan::Phasic );
 
-our %RUN = ( retry => 2, opt => '-aqz' );
+our %RUN = ( retry => 2, opt => '-aq' );
 
 sub new
 {
@@ -60,20 +60,15 @@ sub new
     {
         my ( $src, $dst, %param ) = splice @_;
         my $sp = $src{$src} ? $sp : $dp;
-        my $ssh = 'ssh -o StrictHostKeyChecking=no';
+        my $ssh = 'ssh -x -c blowfish -o StrictHostKeyChecking=no';
+        my @cmd = ( $ssh, $dst );
 
-        my $cmd_user = << "USER";
-$ssh $dst nice -n 19 'rsync -e "$ssh" $param{opt} $src:$sp $dp'
-USER
-
-        my $cmd_root = << "ROOT";
-$ssh $dst nice -n 19 ionice -c3 'rsync -e "$ssh" $param{opt} $src:$sp $dp'
-ROOT
-        my $rsync = my $cmd = $< ? $cmd_user : $cmd_root;
-
-        chop $rsync;
-        #&{ $param{log} }( $cmd );
-        return system( $rsync ) ? die "ERR: $cmd" : 'OK';
+        push @cmd, "nice -n $param{nice}" if $param{nice};
+        push @cmd, << "RSYNC";
+'rsync -e "$ssh" $param{opt} $src:$sp $dp'
+RSYNC
+        my $rsync = join ' ', @cmd; chop $rsync;
+        return system( $rsync ) ? die "ERR: $rsync" : 'OK';
     };
 
     bless $class->SUPER::new( %param, weight => $w8, code => $rsync ),

@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.32';
+our $VERSION = '0.34';
 
 =head1 MODULES
 
@@ -19,6 +19,7 @@ A cluster information management platform
  Hermes
  Hermes::Range
  Hermes::KeySet
+ Hermes::Integer
  Hermes::Cache
  Hermes::Call
  Hermes::DBI::Cache
@@ -58,7 +59,9 @@ A maintenance platform
 
 Multiplexed IO
 
+ MIO
  MIO::TCP
+ MIO::UDP
  MIO::CMD
  MIO::SSH
 
@@ -75,7 +78,7 @@ A plugin execution platform
 A configuration management platform
 
  Pan::Conf
- Pan::Macro
+ Pan::Macro ## to be implemented
  Pan::Node
  Pan::Path
  Pan::RCS

@@ -12,17 +12,18 @@ return sub
 
     my %param = @_;
     my ( $cmd, $test ) = @{ $param{argv} };
-    my %input = ( input => [ `$cmd` ] );
+    my @cmd = `$cmd`; chop @cmd;
+    my %input = ( input => \@cmd );
 
     if ( ref $test eq 'HASH' )
     {
-        map { delete $test->{$_} unless $test->{$_} = 
+        map { delete $test->{$_} unless $test->{$_} =
             Vulcan::Grep->new( %input, rule => $test->{$_} )->eval } keys %$test;
 
         $test = undef unless %$test;
     }
     else
-    { 
+    {
         $test = Vulcan::Grep->new( %input, rule => $test )->eval;
     }
     YAML::XS::DumpFile \*STDOUT, $test if $test;

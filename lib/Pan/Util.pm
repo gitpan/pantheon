@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use Carp;
 
-use Pan::Macro;
+#use Pan::Macro;
 
 =head1 METHODS 
 
@@ -39,7 +39,7 @@ sub fmv
 
     if ( my $macro = $option{macro} )
     {
-        Pan::Macro->new( ref $macro ? @$macro : $macro )->apply( $src );
+        #Pan::Macro->new( ref $macro ? @$macro : $macro )->apply( $src );
     }
 
     if ( my $chown = $option{chown} )

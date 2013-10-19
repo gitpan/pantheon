@@ -41,8 +41,7 @@ sub new
 
     while ( my $line = <$cmd> ) ## sar
     {
-        $flip = $line =~ s/^Average:\s+//;
-        $flop = $flip if $flip;
+        $flop = $flip if $flip = $line =~ s/^Average:\s+//;
         next unless $flop;
 
         if ( length $line > 1 ) { push @data, [ split /\s+/, $line ] }

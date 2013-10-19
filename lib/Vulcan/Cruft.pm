@@ -103,6 +103,7 @@ Rotate files according to %param. Returns a hash of results.
 
  size: max size of each segment.
  block: block size ( per cut ).
+ count: number of files to keep.
 
 =cut
 sub cut
@@ -122,21 +123,20 @@ sub cut
         next unless -f $file;
         next unless my $cut = int( ( stat $file )[7] / $size );
 
+        my $keep = $param{count} || $cut;
         my ( $chunk, $i ) = ( $file.$time, 0 );
 
-        while ( $i <= $cut )
+        while ( $cut >= 0 )
         {
-            my $skip = $count * $i;
-            my $of = $chunk . ++ $i;
+            my $skip = $count * $i ++;
+            my $of = $keep < $cut ? next : $chunk . $cut --;
+
             last if system sprintf "$dd if=$file of=$of skip=$skip";
         }
 
-        if ( $i )
-        {
-            $chunk .= $i;
-            system "cat $chunk > $file && rm $chunk";
-            $cut{$file} = [ $time, $i ];
-        }
+        $chunk .= 0;
+        system "cat $chunk > $file && rm $chunk";
+        $cut{$file} = [ $time, $i < $keep ? $i : $keep ];
     }
     return wantarray ? %cut : \%cut;
 }
