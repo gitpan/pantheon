@@ -68,6 +68,7 @@ lib/Vulcan/SQLiteDB.pm
 lib/Vulcan/Sort.pm
 lib/Vulcan/Sudo.pm
 lib/Vulcan/Symlink.pm
+lib/Vulcan/Symlink/Conf.pm
 lib/Vulcan/SysInfo.pm
 lib/pantheon.pm
 pantheon/.backup
@@ -95,6 +96,7 @@ pantheon/poros/code/dump
 pantheon/poros/code/grep
 pantheon/poros/code/janus
 pantheon/poros/code/seco
+pantheon/poros/code/symlink
 pantheon/poros/code/sysinfo
 pantheon/poros/path
 pantheon/tools/.config
@@ -106,6 +108,7 @@ pantheon/tools/argos/watch
 pantheon/tools/backup
 pantheon/tools/big
 pantheon/tools/caller
+pantheon/tools/conf/symlink
 pantheon/tools/daemon
 pantheon/tools/decruft
 pantheon/tools/fping-r
@@ -132,6 +135,7 @@ pantheon/tools/seco/decruft
 pantheon/tools/seco/go
 pantheon/tools/seco/index
 pantheon/tools/seco/ntpsync
+pantheon/tools/symlink
 pantheon/tools/sysinfo
 t/00-load.t
 t/boilerplate.t

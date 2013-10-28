@@ -1,5 +1,17 @@
 Revision history for pantheon.
 
+0.36    2013.10.28
+
+0.35    2013.10.22
+        Argos::Map - pass path object to plugin *
+        Vulcan::Symlink - bugfix and new feature, rollback
+        Vulcan::Symlink::Conf - new module
+        SECO::ExpSSH - freebsd support
+        pantheon/argos/code/m.port - new feature, ad-hoc input *
+        pantheon/janus/code/b.idc - new plugin
+        pantheon/poros/code/symlink - new plugin
+        pantheon/tools/symlink - new tool
+
 0.34    2013.10.19
 
 0.33    2013.10.13

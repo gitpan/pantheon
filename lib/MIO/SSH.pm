@@ -60,11 +60,9 @@ sub run
     local $/ = "\n";
 
     my $self = shift;
-    my %run = ( %RUN, @_ );
     my @node = keys %$self;
-    my $ext = "$Script.$$";
-    my $prompt = 'password:';
-    my ( %result, %busy );
+    my ( %run, %result, %busy ) = ( %RUN, @_ );
+    my ( $ext, $prompt ) = ( "$Script.$$", 'password:' );
     my ( $max, $timeout, $user, $sudo, $pass, $lock ) =
         @run{ qw( max timeout user sudo pass lock ) };
 

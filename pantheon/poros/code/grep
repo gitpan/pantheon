@@ -17,8 +17,8 @@ return sub
 
     if ( ref $test eq 'HASH' )
     {
-        map { delete $test->{$_} unless $test->{$_} =
-            Vulcan::Grep->new( %input, rule => $test->{$_} )->eval } keys %$test;
+        map { delete $test->{$_} unless $test->{$_} = Vulcan::Grep
+            ->new( %input, rule => $test->{$_} )->eval } keys %$test;
 
         $test = undef unless %$test;
     }

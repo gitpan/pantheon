@@ -44,7 +44,7 @@ dance;
 
 sub loadconf
 {
-    my $domain = $SECO::Conf::DOMAIN;
+    my $domain = $SECO::DOMAIN;
     my $conf = shift; $conf =~ s/$domain$//;
 
     return () unless $conf =~ s/(\d+)@/@/;

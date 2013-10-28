@@ -8,8 +8,9 @@ Vulcan::Symlink - manipulate symbolic links
 use strict;
 use warnings;
 
-use Carp;
 use Cwd;
+use Carp;
+use File::Spec;
 
 our $ROLLBACK = 'rb';
 
@@ -29,81 +30,67 @@ our $ROLLBACK = 'rb';
 sub new
 {
     my ( $class, %self ) = splice @_;
-
-    confess 'link not defined' unless defined $self{link};
-
-    $self{rb} = "$self{link}.$ROLLBACK";
-    $self{cwd} = getcwd();
-    $self{root} = $self{cwd} unless defined $self{root};
-
+    map { confess "$_ not defined" unless defined $self{$_} } qw( link root );
+    $self{prev} = "$self{link}.$ROLLBACK";
     bless \%self, ref $class || $class;
 }
 
 sub make
 {
     my ( $self, %link ) = splice @_;
-    my ( $link, $rb ) = @$self{ 'link', 'rb' };
-    my ( $path, $chown ) = @link{ 'path', 'chown' };
+    my ( $path, $chown ) = @link{ qw( path chown ) };
+    my ( $link, $prev ) = $self->path( @$self{ qw( link prev ) } );
 
-    my $curr = $self->readlink;
-    my $prev = $self->readlink( $rb );
-
-    return $self unless defined $path;
-
-    if ( $path ne $curr )
+    if ( defined $path )
     {
-        $self->syscmd( "mv $link $rb" ) if length $curr;
-        $self->syscmd( "ln -s $path $link" );
+        $path = $self->path( $path );
+        $self->syscmd( "ln -s $path $prev" ) unless -l $prev;
+        $self->syscmd( "mv $link $prev; ln -s $path $link" )
+            if $path ne $self->read();
+    }
+    else
+    {
+        $path = $self->path();
+        $self->syscmd( "mv $prev $link" )
+            if -l $prev && $self->read( $self->{prev} );
     }
 
     if ( $< ) { }
     elsif ( $chown ) { $self->syscmd( "chown -h $chown $link" ) }
     elsif ( -e $path ) { chown( ( stat $path )[4,5], $link ) }
-
-    $self->chdir();
     return $self;
 }
 
 sub check
 {
     my $self = shift;
-    my %link = 
-    ( 
-        current => [ $self->{link} => $self->readlink() ],
-        rollback => [ $self->{rb} => $self->readlink( $self->{rb} ) ],
+    my %link =
+    (
+        curr => [ $self->{link} => $self->read() ],
+        prev => [ $self->{prev} => $self->read( $self->{prev} ) ],
     );
-    $self->chdir();
     return wantarray ? %link : \%link;
 }
 
-sub readlink
+sub read
 {
     my $self = shift;
-    my $link = @_ ? shift : $self->{link};
-
-    $self->chdir( 'root' );
-    return '' unless -e $link;
-    $link = -l $link ? readlink $link : confess "$link is not a symlink";
+    my @link = map { -l $_ ? readlink $_ : '' } $self->path( @_ );
+    wantarray ? @link : shift @link;
 }
 
-sub chdir
+sub path
 {
     my $self = shift;
-    my $dir = $self->{ @_ ? shift : 'cwd' };
-    confess "failed to cd $dir" unless chdir $dir;
+    my @path = map { File::Spec->file_name_is_absolute( $_ ) ? $_ :
+        File::Spec->join( $self->{root}, $_ ) } @_ ? @_ : $self->{link};
+    wantarray ? @path : shift @path;
 }
 
 sub syscmd
 {
     my ( $self, $cmd ) = splice @_;
     confess "failed to $cmd" if system $cmd;
-}
-
-sub DESTROY
-{
-    my $self = shift;
-    $self->chdir();
-    %$self = ();
 }
 
 1;

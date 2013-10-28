@@ -53,18 +53,16 @@ Returns HASH of HASH of nodes. First level is indexed by type
 =cut
 sub run
 {
+    confess "poll: $!" unless my $poll = IO::Poll->new();
+
     local $| = 1;
     local $/ = undef;
 
     my $self = shift;
-
-    confess "poll: $!" unless my $poll = IO::Poll->new();
-
+    my @node = keys %$self;
     my ( %run, %result, %busy ) = ( resp => 1, %RUN, @_ );
     my ( $log, $max, $timeout, $input, $resp ) =
         @run{ qw( log max timeout input resp ) };
-
-    my @node = keys %$self;
 
     $input ||= -t STDIN ? '' : <STDIN>;
 
@@ -88,12 +86,13 @@ sub run
             my $node = shift @node;
             my %inet =
             (
-                PeerAddr => $node, Blocking => 0,
+                PeerAddr => $node, Blocking => 0, Timeout => $timeout,
                 Proto => 'udp', Type => SOCK_DGRAM,
             );
 
             my $sock = $self->{$node}
-                ? IO::Socket::INET->new( %inet ) : IO::Socket::UNIX->new( %inet );
+                ? IO::Socket::INET->new( %inet )
+                : IO::Socket::UNIX->new( %inet );
 
             unless ( $sock )
             {

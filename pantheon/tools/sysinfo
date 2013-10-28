@@ -2,42 +2,48 @@
 
 use strict;
 use warnings;
-use YAML::XS;
 
 use Hermes;
-use Vulcan::SysInfo;
-use Vulcan::Sudo;
+use Vulcan::OptConf;
 
-Vulcan::Sudo->sudo();
+$| ++;
 
-my ( $info, %info ) = Vulcan::SysInfo->new( interval => 1 );
+my $option = Vulcan::OptConf->load();
+my %o = $option->get( qw( range prod ) )->dump();
+
+my $cluster = Hermes->new( $option->dump( 'range' ) );
 my $range = Hermes->new();
+my $output;
+
+map { $range->add( $cluster->load( $_ ) ) }
+    @ARGV, -t STDIN ? () : map { split /\s+/ } <STDIN>;
 
 =head1 SYNOPSIS
 
-=head3 data
+=head3 list
 
- $0 metrics ..
+Print range as a random list.
 
-=cut
-if ( @ARGV = map { $range->load( $_ )->list } @ARGV )
-{
-    %info = map { $_ => { $info->info( $_ ) } } @ARGV;
-}
-=head3 info
-
- $0
+$0 expr .. --list
 
 =cut
-else
-{
-    %info = $info->info();
+if ( $o{list} ) { $output = join "\n", $range->list() }
 
-    for my $info ( values %info )
-    {
-        map { $info->{$_} = $range->load( $info->{$_} )->dump() } keys %$info;
-    }
-}
+=head3 count
 
-YAML::XS::DumpFile \*STDERR, \%info;
+$0 expr .. --count
+
+=cut
+elsif ( $o{count} ) { $output = $range->list() }
+
+=head3 normalize
+
+Print a range expression
+
+$0 expr ..
+
+=cut
+else { $output = $range->dump() }
+
+print "$output\n";
 exit 0;

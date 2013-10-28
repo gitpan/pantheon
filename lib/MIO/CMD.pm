@@ -57,17 +57,15 @@ Returns HASH of HASH of nodes. First level is indexed by type
 =cut
 sub run
 {
+    confess "poll: $!" unless my $poll = IO::Poll->new();
+
     local $| = 1;
     local $/ = undef;
 
     my $self = shift;
-
-    confess "poll: $!" unless my $poll = IO::Poll->new();
-
-    my %run = ( %RUN, @_ );
-    my ( $log, $max, $timeout ) = @run{ qw( log max timeout ) };
-    my ( %result, %buffer, %busy );
     my @node = keys %$self;
+    my ( %run, %result, %buffer, %busy ) = ( %RUN, @_ );
+    my ( $log, $max, $timeout ) = @run{ qw( log max timeout ) };
     my %node = map { $_ => {} } qw( stdout stderr );
     my $input = defined $run{input} ? $run{input} : -t STDIN ? '' : <STDIN>;
 
