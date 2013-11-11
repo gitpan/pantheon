@@ -25,7 +25,7 @@ use Vulcan::Logger;
  );
 
 =cut
-our ( $MAX, $POLL ) = ( 128, 0.1 );
+our ( $MAX, $POLL ) = ( 128, 0.01 );
 
 sub new
 {

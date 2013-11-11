@@ -33,6 +33,7 @@ my $conf = Argos::Conf->new( $o{map} );
 
 my $range = Hermes->new( $option->dump( 'range' ) );
 my $db = $range->db();
+my %want = map { $_ => 1 } @ARGV;
 
 do
 {
@@ -45,6 +46,8 @@ do
         my ( @name, %dup ) = split '\.', File::Basename::basename( $file );
         my $stat = pop @name; 
         my $name = join '.', @name;
+
+        next if %want && ! $want{$stat};
 
         while ( my ( $mesg, $node ) = each %$data ) 
         {

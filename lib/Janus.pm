@@ -112,8 +112,9 @@ Launch maintenance. Return 1 on failure, 0 on success.
 =cut
 sub run
 {
-    my ( $self, %run ) = shift;
+    my $self = shift;
     my ( $name, $path ) = @$self{ qw( name path ) };
+    my %run = ( janus => $name );
     my ( $lock, $link, $cache, $ctrl ) =
         map { $path->path( run => "$name.$_" ) } qw( lock log cache ctrl );
 

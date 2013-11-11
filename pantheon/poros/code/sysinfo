@@ -25,8 +25,8 @@ return sub
 
         if ( ref $test eq 'HASH' )
         {
-            map { delete $test->{$_} unless $test->{$_} = &$eval( $test->{$_} ) }
-                keys %$test;
+            map { delete $test->{$_}
+                unless $test->{$_} = &$eval( $test->{$_} ) } keys %$test;
 
             $test = undef unless %$test;
         }

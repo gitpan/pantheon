@@ -22,7 +22,7 @@ return sub
     close $fh;
 
     return &$unlink( $temp ) if $md5 ne $file{md5};
-    return &$unlink( $temp ) unless rename $temp, $path;
+    return &$unlink( $temp ) if system "mv $temp $path";
     return &$unlink( $path ) if $file{chmod} && ! chmod oct $file{chmod}, $path;
     return &$unlink( $path ) if @pw && ! chown @pw[2,3], $path;
     return 0;

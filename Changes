@@ -1,5 +1,22 @@
 Revision history for pantheon.
 
+0.38    2013.11.11
+
+0.37    2013.10.29
+        Vulcan::SysInfo - new feature, {TIME}{local}, {TIME}{utc}; bugfix
+        Janus - janus name passed to Janus::Sequence
+        Janus::Sequence - bugfix, alarm; janus name passed in
+        Janus::Ctrl - bugfix
+        SECO - more variables
+        SECO::Conf - new feature, hostname as index
+        SECO::Index - rework
+        SECO::Index::Full - new module, incomplete
+        SECO::Index::Incr - new module, incomplete
+        SECO::Engine - new module, replace SECO::Ctrl
+        pantheon/poros/code/pantheon - new plugin
+        pantheon/janus/code/b.idc - bugfix
+        pantheon/tools/argos/watch - new feature, filter status
+
 0.36    2013.10.28
 
 0.35    2013.10.22

@@ -95,6 +95,7 @@ pantheon/poros/argv/dump
 pantheon/poros/code/dump
 pantheon/poros/code/grep
 pantheon/poros/code/janus
+pantheon/poros/code/pantheon
 pantheon/poros/code/seco
 pantheon/poros/code/symlink
 pantheon/poros/code/sysinfo

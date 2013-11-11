@@ -11,33 +11,47 @@ Vulcan::SysInfo - Get various system statistics through sar, df, etc.
  my $sar = Vulcan::SysInfo->new( interval => 6 );
 
  my %info = $sar->info;
- my $stable = $sar->eval( 'MISC{data}{uptime} > 86400 * 1000' );
+ my $stable = $sar->eval( '{MISC}{data}{uptime} < 300' );
 
 =cut
 use strict;
 use warnings;
 use Carp;
+use POSIX;
 
-use constant { KEY => 'MISC', VAL => 'data', INTERVAL => 6 };
+use constant INTERVAL => 6;
 
 our $REGEX = qr/\{ (\w+) \}\{ ([^{}]+) \}\{ ([^{}]+) \}/x;
 
 sub new
 {
-    local $/ = "\n";
     my ( $class, %self ) = splice @_;
-    my @stat =
-    (
-        [
-            [ qw( time uptime idle ) ],
-            [ time, split /\s+/, `cat /proc/uptime` ],
-        ]
-    );
 
+    local $/ = "\n";
     $self{interval} ||= INTERVAL;
     confess "open: $!" unless open my $cmd, "sar -A $self{interval} 1 |";
 
-    my ( $flip, $flop, @data, %legend );
+    my ( $time, $flip, $flop, @data, %legend ) = time;
+    my %time = ( local => [ localtime $time ], utc => [ gmtime $time ] );
+    my @fmt = qw( a A b B c C d D e F g G h H I
+        j k l m M p P r R s S T u U V w W x X y Y z Z );
+
+    while ( my ( $key, $time ) = each %time )
+    {
+        unshift @$time, $key, map { POSIX::strftime '%' . $_, @$time } @fmt;
+    }
+
+    my @stat =
+    (
+        [
+            [ qw( time uptime idle ) ], 
+            [ $time, split /\s+/, `cat /proc/uptime` ]
+        ],
+        [
+            [ 'TIME', ( map { '_' . $_ } @fmt ),
+              qw( sec min hour mday mon year wday yday dst ) ], values %time
+        ],
+    );
 
     while ( my $line = <$cmd> ) ## sar
     {
@@ -70,8 +84,8 @@ sub new
 
         if ( $legend->[0] !~ /^[A-Z]+$/ )
         {
-             unshift @$legend, KEY;
-             unshift @{ $stat->[0] }, VAL;
+             unshift @$legend, 'MISC';
+             unshift @{ $stat->[0] }, 'data';
         }
 
         my $type = shift @$legend;
@@ -143,13 +157,13 @@ sub eval
 {
     my ( $self, $test ) = splice @_;
     my ( $legend, $metric ) = @$self{ qw( legend metric ) };
+    my ( $value, $index );
 
     while ( $test =~ /$REGEX/g )
     {
-        return undef unless my $value = $metric->{$1}{$2};
-        return undef unless my $index = $legend->{$1}{$3};
+        return undef unless defined ( $value = $metric->{$1}{$2} );
+        return undef unless defined ( $index = $legend->{$1}{$3} );
         return undef unless defined ( $value = $value->[$index] );
-
         $test =~ s/$REGEX/$value/;
     }
     return eval $test ? $test : undef;

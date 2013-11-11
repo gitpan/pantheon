@@ -74,8 +74,8 @@ sub run
             my ( $name, $code ) = @$_;
             my $data = eval { alarm $cycle; &$code( %run ); alarm 0 };
 
+            if ( $@ ) { $log->say( "$name: $@" ); alarm 0 }
             $data{$name} = $data if ref $data eq 'HASH';
-            $log->say( "$name: $@" ) if $@;
         }
 
         confess "$index not defined" ## index must be defined

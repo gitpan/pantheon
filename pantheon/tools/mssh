@@ -10,7 +10,7 @@ use Vulcan::OptConf;
 $| ++;
 
 $Vulcan::OptConf::ARGC = -1;
-@Vulcan::OptConf::CONF = qw( pass_through );
+@Vulcan::OptConf::CONF = qw( pass_through ignore_case );
 
 =head1 SYNOPSIS
 

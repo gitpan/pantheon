@@ -24,4 +24,7 @@ return sub
         next unless my $conf = eval { SECO::Conf->load( $_ ) };
         my ( $name, $dc ) = $conf->name();
         map { $cluster{ "$name$_\@$dc" } = $conf->list( host => $_ ) }
-            1 .. $
+            1 .. $conf->replica();
+    }
+    return \%cluster;
+};

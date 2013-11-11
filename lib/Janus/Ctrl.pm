@@ -91,7 +91,8 @@ is not defined.
 sub resume
 {
     my $self = shift;
-    $self->delete( $TABLE, ctrl => [ 0, $EXC ], @_ );
+    my %node = ( node => [ 1, @_ ] ) if @_;
+    $self->delete( $TABLE, %node, ctrl => [ 0, $EXC ] );
 }
 
 =head3 exclude( $node, $info )

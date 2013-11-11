@@ -77,7 +77,7 @@ sub load_code
     my $self = shift;
     return $self if $self->{static};
 
-    my ( $name, $stage ) = @$self{ 'name', 'stage' };
+    my ( $name, $stage ) = @$self{ qw( name stage ) };
     my $error = "$name: name mismatch with existing code";
     my $code = Janus::Sequence::Code->load( $self->{code} );
 
@@ -178,7 +178,7 @@ sub stage
     my $stage = $self->{stage}[$i];
     my $name = $stage->{name};
     my $run = $self->{run};
-    my ( $log, $stuck ) = @$run{ 'log', 'stuck' };
+    my ( $log, $stuck ) = @$run{ qw( log stuck ) };
     my %run = ( %$run, %{ $stage->{conf} || {} } ); ## override run param
 
     for my $i ( 0 .. $run{redo} )
@@ -198,13 +198,14 @@ sub stage
                 (
                     log => sub { &{ $run->{log} }( $stage->{name}, @_ ) },
                     param => $stage->{conf}{param},
-                    cache => $run->{cache},
                     batch => &{ $run->{exclude} }( $run->{batch} ),
+                    map { $_ => $run->{$_} } qw( cache janus )
                 );
                 alarm 0;
             };
 
             last unless $@;
+            alarm 0;
             &$log( $name, "error $@" );
         }
 
