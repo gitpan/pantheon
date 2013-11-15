@@ -18,15 +18,23 @@ $| ++;
 
 =cut
 my ( $option, %seco );
-BEGIN { $option = Vulcan::OptConf->load(); %seco = $option->dump( 'seco' ) }
+BEGIN { $option = Vulcan::OptConf->load(); %seco = $option->dump( 'seco' ); }
 
 use lib $seco{lib};
 use SECO::Conf;
 
-my ( %cluster, @seco );
+my ( %cluster, @known );
 my $range = Hermes->new( $option->dump( 'range') );
+my $db = $range->db;
 my %node = map { $_ .= $SECO::DOMAIN if $_ !~ /$SECO::DOMAIN/; $_ => 1 }
     @ARGV ? map { $range->load( $_ )->list } @ARGV : Sys::Hostname::hostname();
+
+for my $node ( keys %node )
+{
+    next unless my @cluster = $db->select( 'name', node => [ 1, $node ] );
+    map { push @{ $cluster{hermes}{$_} }, $node } map { @$_ } @cluster;
+    push @known, $node;
+}
 
 for my $conf ( glob File::Spec->join( $seco{conf}, '*' ) )
 {
@@ -36,14 +44,19 @@ for my $conf ( glob File::Spec->join( $seco{conf}, '*' ) )
     for my $i ( 1 .. $conf->replica() )
     {
         next unless my @node = grep { $node{$_} } $conf->list( host => $i );
-        $cluster{ "$name$i\@$dc" } = $range->load( \@node )->dump;
-        push @seco, @node;
+        $cluster{seco}{ "$name$i\@$dc" } = \@node;
+        push @known, @node;
     }
 }
 
-delete @node{@seco};
-$cluster{unknown} = $range->load( \%node )->dump if %node;
+delete @node{@known};
+$cluster{unknown}{unknown} = [ keys %node ] if %node;
 
-YAML::XS::DumpFile \*STDOUT, \%cluster if %cluster;
+for my $cluster ( values %cluster )
+{
+    map { $cluster->{$_} = $range->load( $cluster->{$_} )->dump }
+        keys %$cluster;
+}
+
+YAML::XS::DumpFile \*STDOUT, \%cluster;
 exit 0;
-

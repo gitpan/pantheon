@@ -96,6 +96,7 @@ pantheon/poros/code/dump
 pantheon/poros/code/grep
 pantheon/poros/code/janus
 pantheon/poros/code/pantheon
+pantheon/poros/code/qfed
 pantheon/poros/code/seco
 pantheon/poros/code/symlink
 pantheon/poros/code/sysinfo
@@ -130,12 +131,13 @@ pantheon/tools/poros/client
 pantheon/tools/poros/proxy
 pantheon/tools/range
 pantheon/tools/seco/check
-pantheon/tools/seco/ctrl
 pantheon/tools/seco/dance
 pantheon/tools/seco/decruft
 pantheon/tools/seco/go
+pantheon/tools/seco/hits
 pantheon/tools/seco/index
 pantheon/tools/seco/ntpsync
+pantheon/tools/seco/whoismycluster
 pantheon/tools/symlink
 pantheon/tools/sysinfo
 t/00-load.t

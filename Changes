@@ -1,6 +1,20 @@
 Revision history for pantheon.
 
-0.38    2013.11.11
+0.40    2013.11.15
+
+0.39    2013.11.11
+        Vulcan::Daemon - 'script' option in conf
+        SECO::Index - cont
+        SECO::Index::Full - cont
+        SECO::Index::Incr - cont
+        pantheon/tools/seco/whoismycluster - lookup seco cluster
+        pantheon/poros/code/qfed - new plugin
+        pantheon/tools/seco/hits - new tool
+        pantheon/tools/poros/code/ctrl - search engine ctrl
+        pantheon/tools/seco/ctrl - removed
+        pantheon/argos/code/b.seco - 'local' option
+
+0.38    2013.11.08
 
 0.37    2013.10.29
         Vulcan::SysInfo - new feature, {TIME}{local}, {TIME}{utc}; bugfix
@@ -98,7 +112,7 @@ Revision history for pantheon.
 0.25    2013.09.16
         Pan::Multicast - new module, data distribution via multicast
         Vulcan::SysInfo - bugfix
-        Cerew::DBI::Index - bug fix
+        Cerew::DBI::Index - bugfix
         pantheon/tools/seco/ntpsync - new tools
         pantheon/tools/seco/decruft - new tools
         pantheon/tools/caller - new tools
@@ -183,7 +197,7 @@ Revision history for pantheon.
 0.14    2013.08.12
         Hermes - new feature, callback supports regex
         Hermes::Call - new feature, callback supports regex
-        pantheon/tools/hermes/dump - bug fix
+        pantheon/tools/hermes/dump - bugfix
         pantheon/argos/code/m.http - new features, resolve hostname, debug
 
 0.13    2013.08.06
@@ -229,7 +243,7 @@ Revision history for pantheon.
         tools/* - use warnings 
 
 0.08    2013.07.24
-        pantheon - documentation bug fix
+        pantheon - documentation bugfix
         tools/* - change invocation line to /usr/bin/env perl
         utils/update - new location for update
         utils/cpanm - to automate installations of dependencies

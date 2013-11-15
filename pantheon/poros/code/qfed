@@ -1,0 +1,22 @@
+### perl: poros/code/qfed
+
+use strict;
+use warnings;
+use YAML::XS;
+
+return sub
+{
+    local $/ = "\n";
+
+    return 0 unless my ( $list ) = grep { $_ =~ s/^sch.qss:// } 
+        `/var/ytt/bin/qnetinfo -p ~/ytt/run/sock.default -s group`;
+    chop $list;
+
+    my %list = map { $_ => 1 } split ',', $list;
+    my @qfed = map { chop $_; $_ } grep { s/^RCV HOST:\s+\d+\s+// }
+        `export WORKDIR=~/ytt; echo 360 | /var/ytt/bin/qfedTool --dbg 4`;
+
+    delete @list{@qfed};
+    YAML::XS::DumpFile \*STDOUT, [ keys %list ];
+    return 0;
+};

@@ -8,14 +8,14 @@ Pan::Node - Applies transforms. Extends Pan::Repo.
 
  use Pan::Node;
 
- my $gemnode = Pan::Node->new
+ my $node = Pan::Node->new
  (
      conf => '/conf/file',
      path => '/path/file',
      group => 'foo',
  );
 
- $gemnode->run( log => sub { .. } );
+ $node->run( log => sub { .. } );
 
 =cut
 use strict;

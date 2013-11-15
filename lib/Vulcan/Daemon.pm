@@ -66,9 +66,16 @@ sub new
 
     confess "$error: $@" if $@; 
     confess "$error: not HASH" if ref $conf ne 'HASH';
-    confess "$error: command not defined" unless $conf->{command};
 
-    $conf->{command} = Vulcan::Daemon::Path->macro( $conf->{command} );
+    if ( my $command = $conf->{command} )
+    {
+        $conf->{command} = Vulcan::Daemon::Path->macro( $command );
+    }
+    else
+    {
+        confess "$error: command/script not defined" unless $conf->{script};
+    }
+
     bless \%self, ref $class || $class;
 }
 
@@ -94,10 +101,15 @@ sub run
 
     confess "failed to $mkdir" if system $mkdir;
 
-    $self->script( $path, "exec @nice setuidgid $user $run{command} 2>&1" );
-    $self->script( $log, "mkdir -p $main", "chown -R $user $main",
-        sprintf "exec setuidgid $user multilog t I s%d n%d $main",
-            @run{ qw( size keep ) } );
+    $run{command} = $self->script( $path, 'run.script', $run{script} )
+        if $run{script};
+
+    $self->script( $path, 'run', "#!/bin/sh",
+        "exec @nice setuidgid $user $run{command} 2>&1" );
+
+    $self->script( $log, 'run', "#!/bin/sh",
+        "mkdir -p $main", "chown -R $user $main",
+        "exec setuidgid $user multilog t I s$run{size} n$run{keep} $main" );
             
     if ( -l $link ) { warn "$name: already running\n" }
     elsif ( ! symlink $path, $link ) { confess "symlink: $!" }
@@ -112,7 +124,7 @@ sub kill
 {
     my $self = shift;
     my ( $link, $path, $log ) = @$self{ qw( link path mlog ) };
-    system( "rm $link && svc -dx $path && svc -dx $log" );
+    system( "rm $link && svc -dx $path && svc -dx $log && rm -rf $path" );
 }
 
 =head3 tail( $number )
@@ -145,16 +157,16 @@ sub script
 {
     local $| = 1;
 
-    my ( $self, $path ) = splice @_, 0, 2;
-
+    my ( $self, $path, $name ) = splice @_, 0, 3;
     my $handle = File::Temp->new( UNLINK => 0 );
-    print $handle join "\n", '#!/bin/sh', @_;
+    print $handle join "\n", @_;
 
-    $path = File::Spec->join( $path, 'run' );
+    $path = File::Spec->join( $path, $name );
     my $move = sprintf "mv %s $path", $handle->filename();
 
-    confess "failed to $move" if system( $move );
+    confess "failed to $move" if system $move;
     confess "chmod $path: $!" unless chmod 0544, $path;
+    return $path;
 }
 
 package Vulcan::Daemon::Path;

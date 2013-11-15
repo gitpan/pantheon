@@ -8,11 +8,13 @@ Pan::Repo - group management interface
 
  use Pan::Repo;
 
- my $pan = Pan::Repo->new
+ my $repo = Pan::Repo->new
  (
      conf => '/conf/file',
      path => '/path/file',
  );
+
+ my %conf = $repo->dump
 
 =cut
 use strict;
