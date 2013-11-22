@@ -210,7 +210,7 @@ sub stage
         }
 
         last unless $@;
-        &$stuck( $name, $@, 'error' ); ## block until released
+        &$stuck( $name, "$@", 'error' ); ## block until released
     }
 }
 

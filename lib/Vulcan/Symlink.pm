@@ -40,24 +40,24 @@ sub make
     my ( $self, %link ) = splice @_;
     my ( $path, $chown ) = @link{ qw( path chown ) };
     my ( $link, $prev ) = $self->path( @$self{ qw( link prev ) } );
+    my ( $curr, @chown ) = $self->read();
 
-    if ( defined $path )
+    unless ( defined $path ) ## rollback
     {
-        $path = $self->path( $path );
-        $self->syscmd( "ln -s $path $prev" ) unless -l $prev;
-        $self->syscmd( "mv $link $prev; ln -s $path $link" )
-            if $path ne $self->read();
-    }
-    else
-    {
-        $path = $self->path();
-        $self->syscmd( "mv $prev $link" )
+        $self->syscmd( "rm -f $link; mv $prev $link" )
             if -l $prev && $self->read( $self->{prev} );
+    }
+    elsif ( -e ( $path = $self->path( $path ) ) && $curr ne $path )
+    {
+        $self->syscmd( "rm -f $prev" );
+        $self->syscmd( "mv $link $prev" ) if $curr;
+        $self->syscmd( "ln -s $path $link" );
+        @chown = ( stat $path )[4,5];
     }
 
     if ( $< ) { }
     elsif ( $chown ) { $self->syscmd( "chown -h $chown $link" ) }
-    elsif ( -e $path ) { chown( ( stat $path )[4,5], $link ) }
+    elsif ( @chown ) { chown( @chown, $link ) }
     return $self;
 }
 
