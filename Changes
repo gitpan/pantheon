@@ -1,5 +1,21 @@
 Revision history for pantheon.
 
+0.44    2013.11.29
+
+0.43    2013.11.24
+        Janus - bugfix
+        SECO::Index - cont
+        SECO::Index::Incr - cont
+        SECO::Index::Full - cont
+        SECO::Index - bugfix
+        SECO::Conf::Auto - cont
+        SECO::Engine - cont
+        SECO::Engine::Build - cont
+        SECO::Engine::Search - cont
+        pantheon/tools/seco/whoismycluster - use SECO::Conf::Auto
+        pantheon/tools/seco/search - new tool
+        pantheon/tools/seco/dancer - remove hostlist
+
 0.42    2013.11.22
 
 0.41    2013.11.18

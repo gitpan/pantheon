@@ -162,6 +162,7 @@ See Janus::Ctrl.
             $self->{stuck} = 1;
         }
         sleep 3 while $ctrl->stuck( @_ );
+        $self->{stuck} = 0;
     };
 
     $run{exclude} = sub

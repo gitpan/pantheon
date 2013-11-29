@@ -15,26 +15,13 @@ my %seco; BEGIN { %seco = Vulcan::OptConf->load()->dump( 'seco' ) }
 use lib $seco{lib};
 use SECO::Conf;
 
-get "/hostlist/:cluster" => sub
-{
-    my $output = '';
-    if ( my ( $conf, $replica ) = loadconf( params()->{cluster} ) )
-    {
-        my $i = 1;
-        map { $output .= join( ':', $_, $i ++ ) . "\n" }
-            $conf->list( host => $replica );
-    }
-    return $output;
-};
-
 get "/seconfig/:cluster" => sub
 {
-    my $output = '';
+    my ( $output, $i ) = ( '', 0 );
     for my $cluster ( split ',', params()->{cluster} )
     {
         next unless my ( $conf, $replica ) = loadconf( $cluster );
-        my $i = 1;
-        map { $output .= join( ':', @$_, $i ++ ) . "\n" }
+        map { $output .= join( ':', @$_, ++ $i ) . "\n" }
             $conf->dump( seco => $replica );
     }
     return $output;

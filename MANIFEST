@@ -137,6 +137,7 @@ pantheon/tools/seco/go
 pantheon/tools/seco/hits
 pantheon/tools/seco/index
 pantheon/tools/seco/ntpsync
+pantheon/tools/seco/search
 pantheon/tools/seco/whoismycluster
 pantheon/tools/symlink
 pantheon/tools/sysinfo

@@ -1,0 +1,30 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use YAML::XS;
+
+use Vulcan::OptConf;
+
+$| ++;
+
+=head1 SYNOPSIS
+
+ $0 [--cache off|on] [--start|--restart]
+ $0 --stop
+
+=cut
+my ( $option, %seco );
+BEGIN { $option = Vulcan::OptConf->load(); %seco = $option->dump( 'seco' ) }
+
+use lib $seco{lib};
+use SECO::Engine::Search;
+
+my %o = $option->get( qw( stop start restart cache=s ) )->dump;
+my $seco = SECO::Engine::Search->new();
+
+map { $seco->$_() if $o{$_} ||= $o{restart} } qw( stop start );
+$seco->cache( $o{cache} ) if $o{cache} && ! $o{stop};
+
+sleep 1;
+YAML::XS::DumpFile \*STDOUT, scalar $seco->status();

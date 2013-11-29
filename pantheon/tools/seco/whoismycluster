@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use YAML::XS;
-use File::Spec;
 use Sys::Hostname;
 
 use Hermes;
@@ -21,41 +20,35 @@ my ( $option, %seco );
 BEGIN { $option = Vulcan::OptConf->load(); %seco = $option->dump( 'seco' ); }
 
 use lib $seco{lib};
-use SECO::Conf;
+use SECO::Conf::Auto;
 
-my ( %cluster, @known );
 my $range = Hermes->new( $option->dump( 'range') );
 my $db = $range->db;
-my %node = map { $_ .= $SECO::DOMAIN if $_ !~ /$SECO::DOMAIN/; $_ => 1 }
-    @ARGV ? map { $range->load( $_ )->list } @ARGV : Sys::Hostname::hostname();
+my ( %node, %cluster ) = SECO::Conf::Auto->new( $seco{conf} )->search
+(
+    @ARGV ? map { $range->load( $_ )->list } @ARGV : Sys::Hostname::hostname()
+);
 
 for my $node ( keys %node )
 {
-    next unless my @cluster = $db->select( 'name', node => [ 1, $node ] );
-    map { push @{ $cluster{hermes}{$_} }, $node } map { @$_ } @cluster;
-    push @known, $node;
-}
-
-for my $conf ( glob File::Spec->join( $seco{conf}, '*' ) )
-{
-    next unless $conf = eval { SECO::Conf->load( $conf ) };
-    my ( $name, $dc ) = $conf->name();
-
-    for my $i ( 1 .. $conf->replica() )
+    if ( my @info = @{ $node{$node} } )
     {
-        next unless my @node = grep { $node{$_} } $conf->list( host => $i );
-        $cluster{seco}{ "$name$i\@$dc" } = \@node;
-        push @known, @node;
+        push @{ $cluster{seco}{ $info[0] . $info[2] . '@' . $info[1] } }, $node;
+        delete $node{$node};
+    }
+
+    if ( my @cluster = $db->select( 'name', node => [ 1, $node ] ) )
+    {
+        map { push @{ $cluster{hermes}{$_} }, $node } map { @$_ } @cluster;
+        delete $node{$node};
     }
 }
 
-delete @node{@known};
 $cluster{unknown}{unknown} = [ keys %node ] if %node;
 
 for my $cluster ( values %cluster )
 {
-    map { $cluster->{$_} = $range->load( $cluster->{$_} )->dump }
-        keys %$cluster;
+    map { $cluster->{$_} = $range->load( $cluster->{$_} )->dump } keys %$cluster
 }
 
 YAML::XS::DumpFile \*STDOUT, \%cluster;
