@@ -44,13 +44,13 @@ sub make
 
     unless ( defined $path ) ## rollback
     {
-        $self->syscmd( "rm -f $link; mv $prev $link" )
+        $self->syscmd( "rm -f $link; cp -lr $prev $link" )
             if -l $prev && $self->read( $self->{prev} );
     }
-    elsif ( -e ( $path = $self->path( $path ) ) && $curr ne $path )
+    elsif ( -e ( $path = $self->path( $path ) ) && $curr ne $path ) ## forward
     {
         $self->syscmd( "rm -f $prev" );
-        $self->syscmd( "mv $link $prev" ) if $curr;
+        $self->syscmd( $curr ? "mv $link $prev" : "ln -s $path $prev" );
         $self->syscmd( "ln -s $path $link" );
         @chown = ( stat $path )[4,5];
     }

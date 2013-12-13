@@ -49,7 +49,7 @@ if ( @ARGV && $ARGV[0] eq $INST && -f $INST )
     {
         my %file = map { $_ => $list->file( $_ ) } qw( in ex );
         my $inst = 
-            "tar -T $file{in} -X $file{ex} -cf - | \( cd $dir && tar xvf -\ )";
+            "tar -T $file{in} -X $file{ex} -cf - | \( cd $dir && tar xvf - \)";
 
         warn "$inst\n";
         system "mkdir -p $dir && $inst";

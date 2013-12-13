@@ -22,26 +22,24 @@ my $daemon = Vulcan::Daemon->new( %o, name => basename( shift ) );
 
 Operate a daemontools service.
 
+=head3 kill
+
+ $0 name --kill
+
 =head3 run
 
  $0 name --run
 
 =cut
-if ( $o{run} ) { $daemon->run() }
-
-=head3 kill
-
- $0 name --kill
-
-=cut
-elsif ( $o{kill} ) { $daemon->kill() }
+exit 0 if map { $daemon->$_ } grep { $o{$_} } qw( kill run );
 
 =head3 tail
 
  $0 name --tail number
 
 =cut
-elsif ( $o{tail} ) { $daemon->tail( $o{tail} ) }
+
+if ( $o{tail} ) { $daemon->tail( $o{tail} ) }
 
 =head3 status
 
@@ -51,3 +49,4 @@ elsif ( $o{tail} ) { $daemon->tail( $o{tail} ) }
 else { system sprintf "svstat %s", $daemon->path() }
 
 exit 0;
+

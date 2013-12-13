@@ -10,7 +10,7 @@ $| ++;
 
 =head1 SYNOPSIS
 
- $0 [--cache off|on] [--start|--restart]
+ $0 [--cache off|on] [--load off|on] [--start|--restart] [--qrw]
  $0 --stop
 
 =cut
@@ -22,9 +22,10 @@ use SECO::Engine::Search;
 
 my %o = $option->get( qw( stop start restart cache=s ) )->dump;
 my $seco = SECO::Engine::Search->new();
+my %mode = ( mode => 'qrw' ) if $o{qrw};
 
-map { $seco->$_() if $o{$_} ||= $o{restart} } qw( stop start );
-$seco->cache( $o{cache} ) if $o{cache} && ! $o{stop};
+map { $seco->$_( %mode ) if $o{$_} ||= $o{restart} } qw( stop start );
+map { $seco->$_( $o{$_} ) if $o{$_} } qw( cache load ) unless $o{stop};
 
 sleep 1;
 YAML::XS::DumpFile \*STDOUT, scalar $seco->status();

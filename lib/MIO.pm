@@ -12,7 +12,7 @@ use Carp;
 use File::Spec;
 
 our %RUN = ( max => 128, timeout => 300, log => \*STDERR );
-our %MAX = ( buffer => 4096, period => 0.01 );
+our %MAX = ( buffer => 1024 * 16, period => 0.01 );
 
 sub net
 {

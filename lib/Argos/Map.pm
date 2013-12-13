@@ -203,8 +203,12 @@ Process dumps collected data to I<run> directory. See Argos::Data.
                 $done{$tid} = 1;
             }
 
-            map { threads->object( $_ )->kill( 'SIGALRM' ) }
-                grep { ! $done{$_} } @tid if time - $time > $interval;
+            if ( time - $time > $interval )
+            {
+                $data->dump();
+                $log->say( 'map: timeout.' );
+                exit 1;
+            }
         }
 
         $data->dump();

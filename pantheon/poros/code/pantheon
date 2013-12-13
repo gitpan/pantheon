@@ -4,10 +4,15 @@ use strict;
 use warnings;
 use File::Basename;
 
+use pantheon;
+
 return sub
 {
     my %param = @_;
-    die "no path\n" unless my ( $path, @env ) = @{ $param{argv} };
+    my ( $path, @env ) = @{ $param{argv} };
+
+    unless ( $path ) { print "$pantheon::VERSION\n"; return 0 }
+
     die "no such path $path\n" unless -e $path;
     die "no pantheon\n" unless my ( $pantheon ) = split 'pantheon', $0, 2;
 

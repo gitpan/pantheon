@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.44';
+our $VERSION = '0.46';
 
 =head1 MODULES
 
@@ -85,7 +85,6 @@ A configuration management platform
  Pan::Repo
  Pan::Transform
  Pan::Multicast
- Pan::Util
 
 =head3 Ceres
 

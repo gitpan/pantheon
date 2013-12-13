@@ -13,7 +13,8 @@ $| ++;
 
 =head1 SYNOPSIS
 
- $0 [list of clusters]
+ $0 cluster [--no-lookup] \
+ [--mincnt number] [--sample lines] [--period seconds]
 
 =cut
 
@@ -21,49 +22,38 @@ my ( $option, %seco );
 BEGIN { $option = Vulcan::OptConf->load(); %seco = $option->dump( 'seco' ); }
 
 use lib $seco{lib};
-use SECO::Conf;
+use SECO::Conf::Auto;
 
-my $range = Hermes->new( $option->dump( 'range' ) );
+$Vulcan::OptConf::ARGC = 1;
+
 my ( $port, %miss ) = 12345;
+my %argv = $option->get( qw( mincnt=i sample=i period=i no-lookup ) )->dump();
+my $range = Hermes->new( $option->dump( 'range' ) );
+my @host = SECO::Conf::Auto->new( $seco{conf} )->list( host => shift );
 
-for my $cluster ( map { $range->load( $_ )->list } @ARGV )
+$argv{lookup} = ! delete $argv{'no-lookup'};
+
+my %query = ( code => "nrid", user => 'search', argv => [ %argv ] );
+my %result = MIO::TCP->new( map { join ':', $_, $port } @host )
+    ->run( input => Poros::Query->dump( \%query ), max => 500 );
+
+while ( my ( $type, $mesg ) = each %result )
 {
-    my $seco = $cluster;
-    my $conf = $cluster !~ s/(\d+)@/@/ ? next : eval
+    while ( my ( $mesg, $node ) = each %$mesg )
     {
-        SECO::Conf->load( File::Spec->join( $seco{conf}, $cluster ) )
-    };
+        $mesg = $mesg =~ s/--- \d+\n$//
+            ? eval { YAML::XS::Load( $mesg ) } || 'invalid response'
+            : 'no response';
 
-    my %conf = $@ ? next : $conf->dump( hash => $1 );
-    $conf = $conf->[ $conf->index( $1 ) ]->{conf};
+        $mesg = @$mesg
+            ? sprintf '[ %d ]: %s', @$mesg + 0, $range->load( $mesg )->dump
+            : next if ref $mesg eq 'ARRAY';
 
-    my %query = ( code => "qfed", user => "search" );
-    my %result = MIO::TCP
-        ->new( map { join ':', $_, $port } keys %conf )
-        ->run( input => Poros::Query->dump( \%query ), max => 500 );
-
-    while ( my ( $type, $mesg ) = each %result )
-    {
-        while ( my ( $mesg, $node ) = each %$mesg )
-        {
-            $mesg = $mesg =~ s/--- \d+\n$//
-                ? eval { YAML::XS::Load( $mesg ) } || 'invalid response'
-                : 'no response';
-
-            if ( ref $mesg eq 'ARRAY' )
-            {
-                next unless my @miss =
-                    map { ( keys %{ $conf->[$_ - 1] } )[0] } @$mesg;
-
-                $mesg = sprintf "%d/%d [ %s ]", ( @$conf - @miss ),
-                    0 + @$conf, $range->load( \@miss )->dump;
-            }
-
-            $miss{$seco}{$mesg} =
-                $range->load( [ map { s/:\d+//; $_ } @$node ] )->dump;
-        }
+        map { $_ =~ s/:\d+$//; $_ } @$node;
+        $miss{$mesg} = $range->load( $node )->dump;
     }
 }
 
 print YAML::XS::Dump \%miss if %miss;
 exit 0;
+
