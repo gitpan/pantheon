@@ -6,9 +6,10 @@ use ExtUtils::MakeMaker;
 our %PREREQ_PM =
 (
     DBI => 1.625,
-    ## Dancer => 1.31,
-    ## Expect => 1.21,
+    Dancer => 1.31,
+    Expect => 1.21,
     threads => 1.80,
+    DateTime => 1.03,
     'YAML::XS' => 0.41,
     'DBD::SQLite' => 1.37,
     'Getopt::Long' => 2.38,

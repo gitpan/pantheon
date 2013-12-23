@@ -24,13 +24,19 @@ my %o = $option->get( qw( range=s timeout=i max=i user=s sudo=s order noop ) )
 
 $option->assert( 'range' );
 
+map { $_ .= '\;' if $_ !~ s/([&|]){2}\s*$/\\$1\\$1/ } @ARGV;
+
 my $range = Hermes->new( $option->dump( 'range' ) );
 my %cmd = map { $_ => \@ARGV } $range->load( delete $o{range} )->list();
 
 unless ( $o{noop} )
 {
-    print STDERR "password: ";
-    system 'stty -echo'; $o{pass} = <STDIN>; system 'stty echo';
+    unless ( $o{pass} = $ENV{PASSWD} )
+    {
+        print STDERR "password: ";
+        system 'stty -echo'; $o{pass} = <STDIN>; system 'stty echo';
+    }
+
     $o{lock} = "/tmp/mssh.$$" if $o{order};
 }
 

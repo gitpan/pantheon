@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.46';
+our $VERSION = '0.48';
 
 =head1 MODULES
 
@@ -78,13 +78,20 @@ A plugin execution platform
 A configuration management platform
 
  Pan::Conf
- Pan::Macro ## to be implemented
  Pan::Node
  Pan::Path
  Pan::RCS
  Pan::Repo
  Pan::Transform
  Pan::Multicast
+
+=head3 Cronos
+
+A scheduler
+
+ Cronos
+ Cronos::Period
+ Cronos::Policy
 
 =head3 Ceres
 
@@ -112,6 +119,7 @@ A suite of utility modules
  Vulcan::Grep
  Vulcan::Sort
  Vulcan::Sudo
+ Vulcan::File
  Vulcan::Manifest
 
 =head1 AUTHOR

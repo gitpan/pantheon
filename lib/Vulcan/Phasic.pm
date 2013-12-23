@@ -72,7 +72,7 @@ sub run
     $run{log} = sub { $log->say( @_ ) };
 
     my %src = map { $_ => &$w8( $_ ) } @{ $self->{src} };
-    my %dst = map { $_ => &$w8( $_ ) } grep { ! $src{$_} } @{ $self->{dst} };
+    my %dst = map { $_ => &$w8( $_ ) } @{ $self->{dst} };
     my %quiesce = map { $_ => 1 } @{ $self->{quiesce} };
 
     my @queue = map { Thread::Queue->new() } 0, 1;

@@ -1,5 +1,24 @@
 Revision history for pantheon.
 
+0.48    2013.12.23
+
+0.47    2013.12.13
+        UPDATE - set installation ownership by environment variable $OWNER
+        MIO::SSH - sudo multiple commands support
+        Vulcan::Mrsync - dedup when paths are same
+        Vulcan::Phasic - do not dedup
+        Janus::Ctrl - dump()
+        SECO::Engine::Build - bugfix
+        Cronos - new module
+        Cronos::Period - new module
+        Cronos::Policy - new module
+        pantheon/tools/cronos/make - new tool
+        pantheon/tools/cronos/list - new tool
+        pantheon/tools/cronos/now - new tool
+        pantheon/tools/seco/dancer - removed
+        pantheon/tools/mssh - load password from environment variable $PASSWD
+        pantheon/tools/passwd - set environment variable $PASSWD
+
 0.46    2013.12.13
 
 0.45    2013.12.02

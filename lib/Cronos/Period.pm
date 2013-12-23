@@ -1,0 +1,76 @@
+package Cronos::Period;
+
+use base qw( Cronos Hermes::Integer );
+
+use strict;
+use warnings;
+
+use Carp;
+
+our $SEP = $Cronos::SEP;
+our %RGX = %Cronos::RGX;
+
+=head1 SYNOPSIS
+
+ use Cronos::Period;
+ 
+ my $period = Cronos::Period->new( '07:13 ~ 13:20, 23:00 ~ 02:23' );
+ my ( $range, $event ) = $period->dump( $dt1, $dt2, period => 7 );
+
+=cut
+sub new
+{
+    my ( $class, $expr ) = splice @_;
+    my $self = $class->SUPER::new();
+
+    while ( $expr && $expr =~ 
+        s/^\s*($RGX{hour}):($RGX{min})\s*~\s*($RGX{hour}):($RGX{min})$SEP*//g )
+    {
+        my $day = Cronos::DAY * ( $1 > $3 || $1 == $3 && $2 > $4 );
+        my $duration = $self->new()->load
+        (
+            $1 * Cronos::HOUR + $2 * Cronos::MIN,
+            $3 * Cronos::HOUR + ( $4 + 1 ) * Cronos::MIN - 1 + $day
+        );
+        $self->add( $duration );
+    }
+    return length $expr ? croak "invalid expression -> $expr" : $self;
+}
+
+=head1 METHODS
+
+=head3 dump( $begin, $end, %param )
+
+Returns a range of durations and a list of events
+indicated by seconds since epoch.
+
+ period: interation
+ day: days to select by
+
+=cut
+sub dump
+{
+    my ( $self, $begin, $end, %param ) = splice @_;
+    my $period = $param{period} || 1;
+    my %day = map { $_ % $period => 1 } @{ $param{day} || [ 1 .. $period ] };
+    my ( @duration, %event ) = $self->list( skip => 1 );
+    my $range = $self->SUPER::new();
+    my ( $now, $then ) = map { $_->epoch } $begin, $end;
+
+    for ( my $i = 1; $now < $then; $i ++ )
+    {
+        next unless $day{ $i % $period };
+        $now = $begin->clone->add( days => $i - 1 )->epoch;
+
+        for my $duration ( @duration )
+        {
+            my @duration = map { $_ + $now } @$duration;
+            $range->add( $range->new()->load( @duration ) );
+            $duration[1] ++;
+            @event{@duration} = ( 1, 1 );
+        }
+    }
+    return $range, [ keys %event ];
+}
+
+1;

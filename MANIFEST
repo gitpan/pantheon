@@ -20,6 +20,9 @@ lib/Argos/Reduce.pm
 lib/Ceres/DBI/Index.pm
 lib/Ceres/Rcvr.pm
 lib/Ceres/Sndr.pm
+lib/Cronos.pm
+lib/Cronos/Period.pm
+lib/Cronos/Policy.pm
 lib/Hermes.pm
 lib/Hermes/Cache.pm
 lib/Hermes/Call.pm
@@ -113,6 +116,9 @@ pantheon/tools/backup
 pantheon/tools/big
 pantheon/tools/caller
 pantheon/tools/conf/symlink
+pantheon/tools/cronos/list
+pantheon/tools/cronos/make
+pantheon/tools/cronos/now
 pantheon/tools/daemon
 pantheon/tools/decruft
 pantheon/tools/fping-r
@@ -129,11 +135,11 @@ pantheon/tools/loop
 pantheon/tools/mcmd
 pantheon/tools/mrsync
 pantheon/tools/mssh
+pantheon/tools/passwd
 pantheon/tools/poros/client
 pantheon/tools/poros/proxy
 pantheon/tools/range
 pantheon/tools/seco/check
-pantheon/tools/seco/dance
 pantheon/tools/seco/decruft
 pantheon/tools/seco/go
 pantheon/tools/seco/hits

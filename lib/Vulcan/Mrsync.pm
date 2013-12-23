@@ -47,6 +47,8 @@ sub new
 
     croak "path not defined" unless $sp;
 
+    $param{dst} = [ grep { ! $src{$_} } @{ $param{dst} } ] if $sp eq $dp;
+
     if ( $sp =~ /\/$/ ) { $dp .= '/' if $dp !~ /\/$/ }
     elsif ( $dp =~ /\/$/ ) { $dp .= File::Basename::basename( $sp ) }
 

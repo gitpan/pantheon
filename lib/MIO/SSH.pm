@@ -91,8 +91,8 @@ sub run
             my $log = "/tmp/$node.$ext";
             my $ssh = "$SSH -l $user $node ";
 
-            $ssh .= "sudo -p '$prompt' -u $sudo " if $sudo;
-            $ssh .= join ' ', @cmd;
+            $ssh .= join ' ',
+                $sudo ? map { "sudo -p '$prompt' -u $sudo $_" } @cmd : @cmd;
 
             if ( $run{noop} ) { warn "$ssh\n"; next }
             if ( my $pid = fork() ) { $busy{$pid} = [ $log, $node ]; next }

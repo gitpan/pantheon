@@ -43,8 +43,8 @@ A I<callback> query is expressed as a callback symbol followed by the
 callback name, and optionally, followed by a query condition.
 See Hermes::Call.
 
-e.g. "{%%foo!!bar,baz}" means get all elements returned by callback
-I<foo>, expect those indexed by I<bar> and I<baz>.
+e.g. "{%%foo!!bar,baz}" means to get all elements returned by callback
+I<foo>, except those indexed by I<bar> and I<baz>.
 
 Naturally, '*' in a query condition means 'any', i.e. I<no condition>.
 And a query expression may be I<recursive>.

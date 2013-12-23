@@ -122,6 +122,18 @@ sub excluded
     return [ map { @$_ } @exc ];
 }
 
+=head3 dump()
+
+Return ARRAY ref of *.
+
+=cut
+sub dump
+{
+    my $self = shift;
+    my @exc = $self->select( $TABLE => '*' );
+    return [ map { @$_ } @exc ];
+}
+
 =head3 clear()
 
 clear all records. 

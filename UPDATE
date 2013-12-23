@@ -53,7 +53,9 @@ if ( @ARGV && $ARGV[0] eq $INST && -f $INST )
 
         warn "$inst\n";
         system "mkdir -p $dir && $inst";
-        map { system "cd $dir && sudo chown -R root:root $_" } @inst;
+
+        my $user = $ENV{OWNER} || 'root';
+        map { system "cd $dir && sudo chown -R $user:root $_" } @inst;
     }
 }
 else
