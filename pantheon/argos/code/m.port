@@ -1,0 +1,62 @@
+### perl: argos/code/m.port
+use strict;
+use warnings;
+use YAML::XS;
+
+use MIO::TCP;
+use MIO::UDP;
+use Vulcan::Grep;
+
+return sub
+{
+    my ( %param, %mesg, %sort ) = @_;
+    my ( $batch, $param, $cache, $path )
+        = @param{ qw( batch param cache path ) };
+
+    for my $proto ( qw( tcp udp ) )
+    {
+        next unless my $conf = $param->{$proto};
+
+        for my $conf ( @{ ref $conf eq 'HASH' ? [ $conf ] : $conf } )
+        {
+            my $port = $conf->{port} || next;
+            my $grep = $conf->{grep};
+            my %param = ( %$param, %$conf );
+            my ( $input, $code ) = $param{input};
+
+            $param{input} = ( $code = $input->{code} )
+                && ( $code = do $path->path( code => $code ) )
+                && ref $code eq 'CODE'
+                    ? &$code( @{ $input->{param} || [] } ) : ''
+                        if $input && ref $input eq 'HASH';
+
+            for my $port ( ref $port ? @$port : $port )
+            {
+                my @batch = map { join ':', $_, $port } @$batch;
+                my $net = $proto eq 'tcp'
+                    ? MIO::TCP->new( @batch ) : MIO::UDP->new( @batch );
+                my %result = $net->run( %param );
+
+                for my $type ( qw( error mesg ) )
+                {
+                    while ( my ( $mesg, $node ) =
+                        each %{ $result{$type} || {} } )
+                    {
+                        if ( $type eq 'mesg' )
+                        {
+                            last unless $grep;
+                            $mesg = length $mesg ? Vulcan::Grep
+                                ->new( input => $mesg, rule => $grep )->eval()
+                                ? next : 'invalid response' : 'no response';
+                        }
+
+                        $mesg = YAML::XS::Dump +{ $port => { $proto => $mesg } };
+                        $mesg{error}{$mesg} = $node;
+                    }
+                }
+            }
+        }
+    }
+
+    return \%mesg;
+};

@@ -100,7 +100,7 @@ sub run
 
             $poll->mask( $sock => POLLIN | POLLOUT );
             $busy{$sock} = $node;
-            print $log "$node started.\n";
+            print $log "$node started.\n" if $run{verbose};
         }
 
         $poll->poll( $MAX{period} );
@@ -125,7 +125,7 @@ sub run
             push @{ $result{mesg}{ delete $buffer{$sock} } }, $node;
             $poll->remove( $sock );
             eval { $sock->shutdown( 0 ) };
-            print $log "$node done.\n";
+            print $log "$node done.\n" if $run{verbose};
         }
     }
 

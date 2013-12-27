@@ -1,0 +1,78 @@
+### perl: argos/code/m.http
+use strict;
+use Socket;
+use YAML::XS;
+use LWP::UserAgent;
+
+use Vulcan::Grep;
+
+our %PARAM = ( timeout => 10, code => [ 200 ], grep => [], proto => 'http' );
+our %ERROR =
+(
+    down => 'web service down', null => 'no content',
+    cont => 'invalid response', code => 'invalid code',
+    host => 'cannot resolve host',
+);
+
+our $DOMAIN = '.qihoo.net';
+
+return sub
+{
+    my ( %param, %mesg ) = @_;
+    my ( $batch, $param, $cache ) = @param{ qw( batch param cache ) };
+    my ( $proto, $code, $timeout, $debug, $resolve, $check ) =
+        map { $param->{$_} || $PARAM{$_} }
+        qw( proto code timeout debug resolve check );
+
+    my $ua = LWP::UserAgent->new();
+
+    $ua->timeout( $timeout );
+    $ua->env_proxy;
+
+    $code = [ $code ] unless ref $code;
+
+    for my $node ( @$batch )
+    {  
+        my ( $host, $err, %err ) = $node;
+
+        if ( $host !~ /\d+\.\d+\.\d+\.\d+/ )
+        {
+            $host .= $DOMAIN if $host !~ /$DOMAIN$/;
+
+            if ( $resolve )
+            {
+                $host = eval { inet_ntoa( scalar gethostbyname( $host ) ) };
+                if ( $@ ) { $err = $ERROR{host}; goto ERROR }
+            }
+        }
+
+        while ( my ( $port, $conf ) = each %$check )
+        {
+            my $url = "$proto://$host:$port";
+
+            while ( my ( $uri, $grep ) = each %$conf )
+            {
+                my $url = $url . $uri; print "$url\n" if $debug;
+                my $re = $ua->get( $url );
+                my $rc = $re->code();
+
+                $grep = [ $grep ] if ref $grep ne 'ARRAY';
+
+                $err{$port}{$uri} = $ERROR{$err} if $err
+                = ( ! $re->is_success() ) ? 'down'
+                : ( ! grep { $_ == $rc } @$code ) ? 'code'
+                : ( ! @$grep ) ? undef
+                : ( ! ( $url = $re->decoded_content() ) ) ? 'null'
+                : ( ! Vulcan::Grep->new( input => $url, rule => $grep )->eval )
+                ? 'cont' : undef;
+            }
+        }
+        $err = %err ? YAML::XS::Dump \%err : next;
+
+ERROR:  push @{ $mesg{error}{$err} }, $param->{seco}
+        ? $cache->{seco}{$node} : $param->{hermes}
+        ? [ $node, $cache->{hermes}{$node} ] : $node;
+    }
+
+    return \%mesg;
+};

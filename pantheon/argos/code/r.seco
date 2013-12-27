@@ -1,0 +1,84 @@
+#!# perl: argos/code/r.seco
+use strict;
+
+use YAML::XS;
+use File::Basename;
+
+use URI::Escape;
+use LWP::UserAgent;
+
+use Hermes;
+use Vulcan::OptConf;
+
+use constant
+{
+    SMSURL => 'http://alarms.ops.qihoo.net:8360/intfs/alarm_intf',
+    TIMEOUT => 20,
+};
+
+return sub
+{
+    my %param = @_;
+    my ( $data, $param ) = @param{ qw( data param ) };
+    my $tier = join ';', @{ $param{tier} };
+    my $range = Hermes->new( Vulcan::OptConf->load()->dump( 'range' ) );
+
+    my $ua = LWP::UserAgent->new;
+    my $db = $range->db();
+    my ( $path, %data, %cluster );
+
+    for my $file ( @$data )
+    {
+        next unless my $data = eval { YAML::XS::LoadFile( $file ) };
+        my ( $name, %dup ) = File::Basename::basename( $file );
+
+        $path ||= File::Basename::dirname( $file );
+
+        while ( my ( $mesg, $node ) = each %$data )
+        {
+            my %sort;
+
+            for my $node ( @$node )
+            {
+                if ( ref $node )
+                {
+                    push @{ $sort{ $node->[1] } }, $node->[0]
+                        unless $dup{$mesg}{ $node->[0] } ++;
+                }
+                else
+                {
+                    $node =~ s/:\d+$//;
+                    my %name = map { $_ => 1 } map { @$_ }
+                        $db->select( 'name', node => [ 1, $node ] ),
+                        $db->select( 'name', info => [ 1, $node ] );
+
+                    $cluster{$node} ||= %name
+                        ? [ keys %name ] : [ 'unknown cluster' ];
+
+                    map { push @{ $sort{$_} }, $node } @{ $cluster{$node} };
+                }
+            }
+
+            $mesg = YAML::XS::Load( $mesg ) if $mesg =~ /^---/;
+            %sort = map { $_ => $range->load( $sort{$_} )->dump } keys %sort;
+            push @{ $data{$name} }, { node => \%sort, mesg => $mesg };
+        }
+    }
+
+    $data = "$param{name}.report";
+    YAML::XS::DumpFile( "$path/$data", \%data );
+
+    $data .= join ' ', ':', keys %data,
+        sprintf "(%s:%s)", @param{ qw( count esc ) };
+
+    $ua->timeout( $param->{timeout} || TIMEOUT );
+    $ua->env_proxy;
+
+    printf STDERR "sending %s .. ", $data;
+
+    $data = sprintf '?group_name=%s&subject=%s', $tier, uri_escape( $data );
+    my $re = $ua->get( SMSURL . $data );
+
+    printf STDERR "[%s]\n", $re->is_success
+        ? $re->decoded_content : $re->status_line;
+};

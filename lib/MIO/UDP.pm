@@ -101,7 +101,7 @@ sub run
             }
 
             $sock->send( $input ) if defined $input;
-            print $log "$node started.\n";
+            print $log "$node started.\n" if $run{verbose};
 
             if ( $resp )
             {
@@ -111,7 +111,7 @@ sub run
             else
             {
                 eval { $sock->shutdown( 2 ) };
-                print $log "$node done.\n";
+                print $log "$node done.\n" if $run{verbose};
             }
         }
 
@@ -126,7 +126,7 @@ sub run
             push @{ $result{mesg}{$buffer} }, $node;
             $poll->remove( $sock );
             eval { $sock->shutdown( 2 ) };
-            print $log "$node done.\n";
+            print $log "$node done.\n" if $run{verbose};
         }
     }
 

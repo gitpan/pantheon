@@ -9,6 +9,8 @@ use YAML::XS;
 
 use Cronos::Period;
 
+use constant { DURATION => '00:00 ~ 23:59', PERIOD => 1, NULL => '' };
+
 =head1 SYNOPSIS
 
  use Cronos::Policy;
@@ -24,6 +26,54 @@ use Cronos::Period;
  my $who = $policy->get( $now, $level );
  my %list = $policy->list( $level );
 
+=head1 CONFIGURATION
+
+A YAML file that contains a stream of site definitions,
+each a HASH with the following keys:
+
+I<required>:
+
+ pivot: a date expression, for rotation
+ queue: a list of items to rotate through
+
+I<optional>:
+
+ site: default '', name of site
+ period: default 1
+ timezone: default 'local'
+ duration: default '00:00 ~ 23:59'
+ day: days of coverage, default all
+ level: levels of coverage, default all
+ reverse: default 0, reverse escalation order if 1
+
+Coverage is processed in sequential order until met or defaulted to the
+I<last> site ( or in reverse order, and default to the I<first> site if
+'reverse' is set )
+
+Hence I<duration>, I<level>, and I<day> do not apply to the default site.
+
+I<example>:
+
+ ---
+ site: cn
+ pivot: 2013.12.23
+ queue:
+ - huey
+ - dewey
+ - louie
+ ---
+ site: us
+ pivot: 2013.12.23 20:00
+ timezone: America/Los_Angeles
+ duration: '19:10 ~ 7:20'
+ period: 7
+ level: [ 1, 2 ]
+ day: [ 1, 2, 3, 4, 5 ]
+ queue:
+ - tom
+ - dick
+ - harry
+
 =cut
 sub new
 {
@@ -35,37 +85,44 @@ sub new
 
 =head3 load( $path )
 
-Load object from $path
+Loads object from $path
 
 =cut
 sub load
 {
-    my $class = shift;
-    croak "empty config" unless my @conf = YAML::XS::LoadFile shift;
+    my ( $class, $conf, %param ) = splice @_;
+    croak "empty config" unless my @conf = YAML::XS::LoadFile $conf;
 
-    my $conf = $conf[0];
+    @conf = reverse @conf if $param{reverse} || 0;
+    $conf = $conf[-1];
     return $conf if ref $conf eq ( $class = ref $class || $class );
-
     delete @$conf{ qw( duration level day ) };
 
     for my $conf ( @conf )
     {
-        my $error = 'invalid definition: ' . YAML::XS::Dump $conf;
+        my $error = 'invalid definition' . YAML::XS::Dump $conf;
         croak $error unless $conf && ref $conf eq 'HASH';
 
-        my @undef = grep { ! $conf->{$_} } qw( site period queue ); 
-        croak $error . 'missing: ' . YAML::XS::Dump \@undef if @undef;
+        map { $conf->{$_} || croak "$error: $_ not defined" } qw( queue pivot );
+        $conf->{time_zone} = delete $conf->{timezone} || 'local';
 
-        map { croak $error . "$_: not ARRAY" if $conf->{$_}
-            && ref $conf->{$_} ne 'ARRAY' } qw( queue level day );
+        croak "$error: queue: not ARRAY" if ref $conf->{queue} ne 'ARRAY';
+        croak "$error: invalid pivot" unless $conf->{pivot} = 
+            Cronos->epoch( @$conf{ qw( pivot time_zone ) } );
 
-        croak $error . 'invalid epoch' unless $conf->{epoch} = 
-            Cronos->epoch( $conf->{epoch},
-            DateTime::TimeZone->new( name => $conf->{timezone} || 'local' ) );
+        for my $key ( qw( level day ) )
+        {
+            my $val = delete $conf->{$key} || [];
+            my $ref = ref $val;
 
+            $val = $ref ? [] : [ split /\D+/, $val ] if $ref ne 'ARRAY';
+            $conf->{$key} = $val if @$val;
+        }
+
+        $conf->{site} ||= NULL;
         $conf->{level} = { map { $_ => 1 } @{ $conf->{level} || [] } };
-        $conf->{duration} =
-            Cronos::Period->new( $conf->{duration} || '00:00 ~ 23:59' );
+        $conf->{cycle} = ( $conf->{period} ||= PERIOD ) * @{ $conf->{queue} };
+        $conf->{duration} = Cronos::Period->new( $conf->{duration} || DURATION )
     }
     bless \@conf, $class;
 }
@@ -95,20 +152,21 @@ sub set
 
     for my $conf ( @$self )
     {
-        my $cycle = $conf->{period} * @{ $conf->{queue} };
-        my $epoch = DateTime->from_epoch
-            ( epoch => $conf->{epoch}, time_zone => $conf->{timezone} );
-        my $diff = int( ( $begin->epoch - $epoch->epoch )
-            / ( $cycle * Cronos::DAY ) ) * $cycle;
+        my $cycle = $conf->{cycle};
+        my $pivot = DateTime->from_epoch
+            ( epoch => $conf->{pivot}, time_zone => $conf->{time_zone} );
+        my $delta = $begin->epoch - $pivot->epoch;
 
-        if ( $diff > 0 ) { $epoch->add( days => $diff ) }
-        else { $epoch->subtract( days => $cycle - $diff ) }
+        $pivot->add( days => $cycle * int( $delta / Cronos::DAY / $cycle ) )
+            if $delta > 0;
 
-        my ( $range, $event ) = $conf->{duration}->dump( $epoch, $end, %$conf );
+        $pivot->subtract( days => $cycle ) while $begin->epoch < $pivot->epoch;
 
-        $conf->{event} = $event;
-        $conf->{range} =
-            $range->intersect( $range->new->load( $begin->epoch, $end->epoch ) )
+        @$conf{ qw( range event ) } =
+            $conf->{duration}->dump( $pivot, $end, %$conf );
+
+        $conf->{range}->intersect
+            ( $conf->{range}->new->load( $begin->epoch, $end->epoch ) );
     }
     return $self;
 }
@@ -122,15 +180,21 @@ sub get
 {
     my ( $self, $time, $level ) = splice @_;
 
-    for my $conf ( reverse @$self )
+    for my $conf ( @$self )
     {
-        last unless my $range = $conf->{range};
-        next if %{ $conf->{level} } && ! $conf->{level}{$level} 
+        my ( $range, $queue ) = @$conf{ qw( range queue ) };
+
+        last unless $range;
+        next if %{ $conf->{level} } && ! $conf->{level}{$level}
             || ! defined $range->index( $time );
 
-        my $i = int( ( $time - $conf->{epoch} ) / $conf->{period} /
-            Cronos::DAY + $level ) % @{ $conf->{queue} };
-        return { site => $conf->{site}, item => $conf->{queue}[$i] };
+        my $i = int( ( $time - $conf->{pivot} )
+            / ( Cronos::DAY * $conf->{period} ) );
+
+        if ( $conf->{reverse} ) { $i += $level }
+        else { $i -= $level; $i += @$queue while $i < 0 }
+
+        return { site => $conf->{site}, item => $queue->[ $i % @$queue ] };
     }
     return undef;
 }
@@ -143,15 +207,14 @@ Returns a HASH of events indexed by time for $level
 sub list
 {
     my ( $self, $level ) = splice @_;
-    my $prev = { item => Cronos::NULL };
+    my $prev = { item => NULL };
     my %list = map { $_ => 1 } map { @{ $_->{event} } } @$self;
 
     for my $time ( sort { $a <=> $b } keys %list )
     {
         my $conf = $self->get( $time, $level );
-
-        if ( ! $conf || $conf->{item} eq $prev->{item} ) { delete $list{$time} }
-        else { $prev = $list{$time} = $conf }
+        if ( ! $conf || $conf->{item} eq $prev->{item} )
+        { delete $list{$time} } else { $prev = $list{$time} = $conf }
     }
     return wantarray ? %list : \%list;
 }

@@ -114,7 +114,7 @@ sub run
             $node{ $io[2] } = [ stderr => $node ]; 
 
             $busy{$node} = [ $pid, 2 ];
-            print $log "$node started.\n";
+            print $log "$node started.\n" if $run{verbose};
         }
 
         $poll->poll( $MAX{period} );
@@ -143,7 +143,7 @@ sub run
             {
                 waitpid $busy{$node}[0], WNOHANG;
                 delete $busy{$node};
-                print $log "$node done.\n";
+                print $log "$node done.\n" if $run{verbose};
             }
 
             $poll->remove( $fh );

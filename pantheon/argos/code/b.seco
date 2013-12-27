@@ -1,0 +1,56 @@
+### perl: argos/code/b.seco
+use strict;
+use File::Spec;
+use Sys::Hostname;
+
+use Hermes;
+use Vulcan::OptConf;
+
+my ( $option, %seco );
+
+BEGIN
+{
+    $option = Vulcan::OptConf->load();
+    %seco = $option->dump( 'seco' );
+}
+
+use lib $seco{lib};
+use SECO::Conf;
+
+return sub
+{
+    my %param = @_;
+    my ( $target, $thread, $cache, $param ) =
+        @param{ qw( target thread cache param ) };
+    my @node = Hermes->new( $option->dump( 'range' ) )->load( $target )->list();
+
+    if ( $param->{local} && $local->{local} =~ /(\d):(\d)/ )
+    {
+        my $zone = ( split '\.', Sys::Hostname::hostname(), $1 )[ $2 - 1 ];
+        @node = grep { $_ =~ /$zone/ } @node;
+    }
+
+    if ( $param->{seco} )
+    {
+        for ( 0 .. $#node )
+        {
+            my $seco = my $node = shift @node;
+            my $conf = $node !~ s/(\d+)@/@/ ? next : eval
+            {
+                SECO::Conf->load( File::Spec->join( $seco{conf}, $node ) )
+            };
+
+            my %conf = $@ ? next : $conf->dump( hash => $1 );
+
+            while ( my ( $node, $vips ) = each %conf )
+            {
+                push @node, @$vips;
+                map { $cache->{seco}{$_} = [ $node, $seco ] } @$vips;
+            }
+        }
+    }
+
+    my ( $i, @batch ) = 0;
+    map { push @{ $batch[ $i ++ % $thread ] }, $_ } @node;
+    return @batch;
+};

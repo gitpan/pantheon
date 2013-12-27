@@ -26,7 +26,7 @@ return sub
     die "invalid package $pkg\n" if $pkg !~ /^pantheon-\d+\.\d+$/;
     die "failed to chdir $dir\n" unless chdir $dir;
 
-    exit 1 if $ext && system "tar xzf $pkg$ext";
+    exit 1 if $ext && system "rm -rf $pkg && tar xzf $pkg$ext";
     die "failed to chdir $pkg\n" unless -d $pkg && chdir $pkg;
 
     exit 1 if system "$^X Makefile.PL $output";

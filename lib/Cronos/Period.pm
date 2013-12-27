@@ -7,7 +7,7 @@ use warnings;
 
 use Carp;
 
-our $SEP = $Cronos::SEP;
+our $SEP = qr/[^:~\d\w]/;
 our %RGX = %Cronos::RGX;
 
 =head1 SYNOPSIS
@@ -23,8 +23,8 @@ sub new
     my ( $class, $expr ) = splice @_;
     my $self = $class->SUPER::new();
 
-    while ( $expr && $expr =~ 
-        s/^\s*($RGX{hour}):($RGX{min})\s*~\s*($RGX{hour}):($RGX{min})$SEP*//g )
+    while ( $expr && $expr =~ s/^\s*($RGX{hour}):($RGX{minute})\s*
+        ~\s*($RGX{hour}):($RGX{minute})$SEP*//gx )
     {
         my $day = Cronos::DAY * ( $1 > $3 || $1 == $3 && $2 > $4 );
         my $duration = $self->new()->load
@@ -60,14 +60,16 @@ sub dump
     for ( my $i = 1; $now < $then; $i ++ )
     {
         next unless $day{ $i % $period };
-        $now = $begin->clone->add( days => $i - 1 )->epoch;
+
+        my $dt = $begin->clone->add( days => $i - 1 );
+        $event{ $now = $dt->epoch } = 1; ## rotation point
+        my $today = $dt->set( map { $_ => 0 } qw( hour minute second ) )->epoch;
 
         for my $duration ( @duration )
         {
-            my @duration = map { $_ + $now } @$duration;
+            my @duration = map { $_ + $today } @$duration;
             $range->add( $range->new()->load( @duration ) );
-            $duration[1] ++;
-            @event{@duration} = ( 1, 1 );
+            $duration[1] ++; @event{@duration} = 1 .. 2;
         }
     }
     return $range, [ keys %event ];

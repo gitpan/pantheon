@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+$| ++;
+
+use Vulcan::OptConf;
+use Cronos::Policy;
+use Cronos::Calendar;
+
+$Vulcan::OptConf::THIS = 'cronos';
+
+=head1 SYNOPSIS
+
+ $0 name [--zone timezone] [--level number] \
+ [--year year] [--month month] [--grep regex]
+
+=cut
+my %o = Vulcan::OptConf->load()
+    ->get( qw( year=i month=i zone=s level=i grep=s ) )->dump;
+
+my $dt = DateTime->now()->set_time_zone( $o{zone} ||= $Cronos::LTZ )
+    ->set( day => 1, map { $_ => 0 } qw( hour minute second ) );
+
+map { $dt->set( $_ => $o{$_} ) if $o{$_} } qw( year month );
+
+my $month = $o{month};
+my $year = $dt->year();
+my %busy;
+
+if ( @ARGV && $month && defined $o{grep} && ( $o{grep} = qr/$o{grep}/x ) )
+{
+    my $policy = Cronos::Policy->new( "$o{data}/$ARGV[0]" );
+    my @level = 1 .. ( $o{level} || 3 );
+    my $end = $dt->clone->add( months => 1 )->epoch;
+
+    for ( my ( $now, $then ) = $dt->epoch; $now < $end; $now = $then )
+    {
+        my ( $month, $day ) = map { $dt->$_ } qw( month day );
+
+        $then = $dt->add( days => 1 )->epoch;
+        $policy->set( $now, $then );
+        $busy{$month}{$day} = 1 if grep { $_->{item} =~ $o{grep} }
+            map { values %{ $policy->list( $_ ) } } @level;
+    }
+}
+
+Cronos::Calendar->new( $year, %busy )->print( $month );
+exit 0;

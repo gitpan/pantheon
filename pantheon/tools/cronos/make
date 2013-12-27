@@ -30,7 +30,7 @@ if ( @ARGV )
 {
     my %path = map { $_ => "$o{$_}/$ARGV[0]" } qw( conf data );
     my $temp = File::Temp->new( UNLINK => 0 );
-    Cronos::Policy->new( $path{conf} )->dump( $temp );
+    Cronos::Policy->new( $path{conf}, reverse => 1 )->dump( $temp );
     system "chmod a+r $temp && mv $temp $path{data}";
 }
 else

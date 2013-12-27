@@ -9,8 +9,11 @@ use Vulcan::Symlink;
 return sub
 {
     my ( %param, %result ) = @_;
+    my $argv = $param{argv};
 
-    for my $conf ( @{ $param{argv} } )
+    $Vulcan::Symlink::ROLLBACK = shift @$argv if $argv->[0] && ! ref $argv->[0];
+
+    for my $conf ( @$argv )
     {
         my $link = Vulcan::Symlink->new( %$conf );
         $link->make( %$conf ) unless $conf->{check};

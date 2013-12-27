@@ -8,10 +8,12 @@ range:
   callback: $ROOT/hermes/callback
 
 janus:
+  lib: $ROOT/janus/lib
   path: $ROOT/janus/main/path
   conf: $ROOT/janus/main/conf 
 
 argos:
+  lib: $ROOT/argos/lib
   path: $ROOT/argos/main/path
   map: $ROOT/argos/main/map
   reduce: $ROOT/argos/main/reduce

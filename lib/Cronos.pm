@@ -5,17 +5,17 @@ use warnings;
 
 use DateTime;
 
-use constant { DAY => 86400, HOUR => 3600, MIN => 60, NULL => '' };
+use constant { DAY => 86400, HOUR => 3600, MIN => 60 };
 
 our $LTZ = DateTime::TimeZone->new( name => 'local' );
-our $SEP = qr/[^:~\d\w]/,
 our %RGX =
 (
     year => qr/[2-9]\d{3}/,
-    mon  => qr/1[0-2]|0?[1-9]/,
-    day  => qr/3[01]|[1-2]\d|0?[1-9]/,
+    month => qr/1[0-2]|0?[1-9]/,
+    day => qr/3[01]|[1-2]\d|0?[1-9]/,
     hour => qr/2[0-3]|[0-1]?\d/,
-    min  => qr/[0-5]?\d/,
+    minute => qr/[0-5]?\d/,
+    second => qr/[0-5]?\d/,
 );
 
 =head1 METHODS
@@ -28,11 +28,19 @@ Returns seconds since epoch of expression $date with timezone $tz
 sub epoch
 {
     my ( $class, $date, $tz ) = splice @_;
-    my %date = ( year => $1, month => $2, day => $3 ) if $date && ! ref $date
-        && $date =~ qr/^\s*($RGX{year})$SEP($RGX{mon})$SEP($RGX{day})/;
+    my ( @key, %time ) = qw( year month day hour minute second );
 
-    return undef unless %date;
-    return DateTime->new( %date, time_zone => $tz || $LTZ )->epoch;
+    return undef unless my @time = split /\D+/, $date || '';
+    push @time, 0 while @time < @key;
+
+    for my $i ( 0 .. $#key )
+    {
+        my $key = $key[$i];
+        return undef if $time[$i] !~ qr/^($RGX{$key})$/;
+        $time{$key} = $1;
+    }
+
+    return DateTime->new( %time, time_zone => $tz || $LTZ )->epoch;
 }
 
 1;
