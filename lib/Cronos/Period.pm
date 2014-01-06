@@ -29,8 +29,8 @@ sub new
         my $day = Cronos::DAY * ( $1 > $3 || $1 == $3 && $2 > $4 );
         my $duration = $self->new()->load
         (
-            $1 * Cronos::HOUR + $2 * Cronos::MIN,
-            $3 * Cronos::HOUR + ( $4 + 1 ) * Cronos::MIN - 1 + $day
+            $1 * Cronos::HOUR + $2 * Cronos::MINUTE,
+            $3 * Cronos::HOUR + ( $4 + 1 ) * Cronos::MINUTE - 1 + $day
         );
         $self->add( $duration );
     }

@@ -45,3 +45,6 @@ symlink:
 cronos:
   conf: $ROOT/cronos/conf
   data: $ROOT/cronos/data
+
+go:
+  conf: $ROOT/tools/conf/go

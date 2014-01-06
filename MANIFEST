@@ -47,7 +47,6 @@ lib/MIO/SSH.pm
 lib/MIO/TCP.pm
 lib/MIO/UDP.pm
 lib/Pan/Conf.pm
-lib/Pan/Multicast.pm
 lib/Pan/Node.pm
 lib/Pan/Path.pm
 lib/Pan/RCS.pm
@@ -59,11 +58,13 @@ lib/Poros/Query.pm
 lib/Vulcan/Cruft.pm
 lib/Vulcan/Daemon.pm
 lib/Vulcan/DirConf.pm
+lib/Vulcan/ExpSSH.pm
 lib/Vulcan/File.pm
 lib/Vulcan/Grep.pm
 lib/Vulcan/Logger.pm
 lib/Vulcan/Manifest.pm
 lib/Vulcan/Mrsync.pm
+lib/Vulcan/Multicast.pm
 lib/Vulcan/NetMap.pm
 lib/Vulcan/OptConf.pm
 lib/Vulcan/Phasic.pm
@@ -125,6 +126,7 @@ pantheon/tools/cronos/zone
 pantheon/tools/daemon
 pantheon/tools/decruft
 pantheon/tools/fping-r
+pantheon/tools/go
 pantheon/tools/hermes/cache
 pantheon/tools/hermes/dump
 pantheon/tools/hermes/load
@@ -144,13 +146,13 @@ pantheon/tools/poros/proxy
 pantheon/tools/range
 pantheon/tools/seco/check
 pantheon/tools/seco/decruft
-pantheon/tools/seco/go
 pantheon/tools/seco/hits
 pantheon/tools/seco/ntpsync
 pantheon/tools/seco/search
 pantheon/tools/seco/whoismycluster
 pantheon/tools/symlink
 pantheon/tools/sysinfo
+pantheon/tools/trust
 t/00-load.t
 t/boilerplate.t
 t/manifest.t

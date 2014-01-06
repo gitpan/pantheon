@@ -1,9 +1,10 @@
+./seco/
 ./argos/
-./daemon/
-./hermes/
 ./janus/
 ./poros/
-./seco/
+./daemon/
+./hermes/
+./cronos/
 ./tools/
 ./.backup
 

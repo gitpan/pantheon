@@ -25,7 +25,8 @@ requires:
   Expect: 1.21
   Getopt::Long: 2.38
   IO::Socket::Multicast: 1.12
+  IO::Stty: 0.03
   Thread::Queue: 2.12
   YAML::XS: 0.41
   threads: 1.8
-version: 0.50
+version: 0.52

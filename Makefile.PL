@@ -10,6 +10,7 @@ our %PREREQ_PM =
     Expect => 1.21,
     threads => 1.80,
     DateTime => 1.03,
+    'IO::Stty' => 0.03,
     'YAML::XS' => 0.41,
     'DBD::SQLite' => 1.37,
     'Getopt::Long' => 2.38,

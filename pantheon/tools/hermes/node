@@ -17,6 +17,7 @@ use constant DOWN => 1;
 $| ++;
 
 $Vulcan::OptConf::THIS = 'hermes';
+$Vulcan::OptConf::ARGC = -1; 
 
 =head1 SYNOPSIS
 

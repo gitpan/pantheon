@@ -5,7 +5,7 @@ use warnings;
 
 use DateTime;
 
-use constant { DAY => 86400, HOUR => 3600, MIN => 60 };
+use constant { WEEK => 604800, DAY => 86400, HOUR => 3600, MINUTE => 60 };
 
 our $LTZ = DateTime::TimeZone->new( name => 'local' );
 our %RGX =
@@ -39,7 +39,6 @@ sub epoch
         return undef if $time[$i] !~ qr/^($RGX{$key})$/;
         $time{$key} = $1;
     }
-
     return DateTime->new( %time, time_zone => $tz || $LTZ )->epoch;
 }
 

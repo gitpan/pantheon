@@ -3,31 +3,34 @@ package Cronos::Calendar;
 use strict;
 use warnings;
 
-use constant WEEK => 'Su Mo Tu We Th Fr Sa';
-use constant MONTH => qw( _ January February March April May
-    June July August September October November December );
+use Carp;
 
-our ( $HEADER, @HEADER );
+our ( @HEADER, @MONTH, $MONTH, $YEAR ) =
+(
+    'Su Mo Tu We Th Fr Sa', qw( January February March April
+    May June July August September October November December )
+);
 
-format MONTH_HEADER =
+format MONTH =
 @|||||||||||||||||||||
-$HEADER
+$MONTH
 @|||||||||||||||||||||
-WEEK
+$HEADER[0]
 .
 
-format QUARTER_HEADER =
+format QUARTER =
+
 @|||||||||||||||||||||@|||||||||||||||||||||@|||||||||||||||||||||
-@HEADER 
+@MONTH 
 @|||||||||||||||||||||@|||||||||||||||||||||@|||||||||||||||||||||
-WEEK, WEEK, WEEK
+@HEADER[0,0,0]
 .
 
-format YEAR_HEADER =
+format YEAR =
 @|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-$HEADER
-
+$YEAR
 .
+
 =head1 SYNOPSIS
 
  use Cronos::Calendar;
@@ -38,6 +41,7 @@ $HEADER
 sub new
 {
     my ( $class, $year, %block ) = @_;
+    confess 'year must be within 1753 .. 9999' if $year < 1753 || $year > 9999;
 
     while ( my ( $month, $block ) = each %block )
     {
@@ -54,29 +58,37 @@ sub print
     my ( $year, %select ) = @$self;
 
     return $self->month( $month ) if $month;
+    $YEAR = $year; $~ = 'YEAR'; write;
 
-    $HEADER = $year;
-    $~ = 'YEAR_HEADER';
-    write;
+    for my $q ( 1 .. 4 )
+    {
+        my %month = map { $_ => Cronos::Calendar::Month->new( $year, $_ ) }
+        my @month = map { $_ + ( $q - 1 ) * 3 } 1 .. 3;
 
-    map { $self->quarter( $_ ) } 1 .. 4;
+        @MONTH = @HEADER[@month]; $~ = 'QUARTER'; write;
+        $self->dump( %month );
+    }
     return $self;
 }
 
-sub quarter
+sub month
 {
     my ( $self, $index ) = splice @_;
     my ( $year, %block ) = @$self;
-    my %month = map { $_ => Cronos::Calendar::Month->new( $year, $_ ) }
-    my @month = map { $_ + ( $index - 1 ) * 3 } 1 .. 3;
 
-    @HEADER = ( MONTH )[@month];
-    $~ = 'QUARTER_HEADER';
-    write;
+    $MONTH = sprintf '%s %s', $HEADER[$index], $year; $~ = 'MONTH'; write;
+    $self->dump( $index => Cronos::Calendar::Month->new( $year, $index ) );
+}
+
+sub dump
+{
+    my ( $self, %month ) = splice @_;
+    my ( $year, %block ) = @$self;
+    my @month = sort { $a <=> $b } keys %month;
 
     for my $w ( 0 .. 5 )
     {
-        for my $m ( sort keys %month )
+        for my $m ( @month )
         {
             if ( my $week = $month{$m}->week( $w ) )
             {
@@ -94,74 +106,41 @@ sub quarter
     return $self;
 }
 
-sub month
-{
-    my ( $self, $index ) = splice @_;
-    my ( $year, %block ) = @$self;
-    my $block = $block{$index} || {};
-    my $month = Cronos::Calendar::Month->new( $year, $index );
-
-    $HEADER = sprintf '%s %s', ( MONTH )[$index], $year;
-    $~ = 'MONTH_HEADER';
-    write;
-
-    for my $w ( 0 .. 5 )
-    {
-        if ( my $week = $month->week( $w ) )
-        {
-            map { printf '%3s', $block->{$_} ? '' : $_ } @$week;
-        }
-        print "\n";
-    }
-    return $self;
-}
-
 package Cronos::Calendar::Month;
 
 use strict;
 use warnings;
 
-use Carp;
-use DateTime;
+use POSIX;
 
 sub new
 {
     my ( $class, $year, $month ) = splice @_;
-    my $offset = DateTime->new( year => $year, month => $month, day => 1 )
-        ->dow % 7;
+    my $dow = POSIX::strftime( '%w' , 0, 0, 0, 1, $month - 1, $year - 1900 );
+    my $count = ( 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 )[$month];
+    my ( @self, @sun ) = [ map { '' } 0 .. $dow - 1 ];
 
-    my @count = ( 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
-    my $count = $month == 2 ? $year % 100 && ! ( $year % 4 && $year % 400 )
-        ? 29 : 28 : $count[$month];
+    push @{ $self[0] }, map { $_ - $dow + 1 } $dow .. 6;
+    $count += $year % 100 && ! ( $year % 4 && $year % 400 ) if $month == 2;
 
-    bless [ $offset, $count ], ref $class || $class;
+    for ( my $i = ( $dow <= 0 ? 1 : 8 ) - $dow; $i <= $count; $i += 7 )
+    {
+        push @sun, $i;
+    }
+    unshift @sun, '' if $sun[0] != 1;
+    
+    for my $row ( 1 .. 5 )
+    {
+        my $i = $sun[$row];
+        push @self, $i ? [ map { $i <= $count ? $i ++ : '' } 0 .. 6 ] : undef;
+    }
+    bless \@self, ref $class || $class;
 }
 
 sub week
 {
-    my ( $self, $index ) = @_;
-    my ( $offset, $count ) = @$self;
-    my ( $day, @sun, @day ) = ( $offset <= 0 ? 1 : 8 ) - $offset;
-
-    while ( $day <= $count )
-    {
-        push @sun, $day;
-        $day += 7;
-    }
-
-    unshift @sun, '' if $sun[0] != 1;
-
-    if ( $index )
-    {
-        return unless my $day = $sun[$index];
-        map { push @day, $day <= $count ? $day ++ : '' } 0 .. 6;
-    }
-    else
-    {
-        map { $day[$_] = '' } 0 .. $offset - 1;
-        map { $day[$_] = $_ - $offset + 1 } $offset .. 6;
-    }
-    return wantarray ? @day : \@day;
+    my $self = shift;
+    return $self->[ shift ];
 }
 
 1;

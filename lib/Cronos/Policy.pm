@@ -155,10 +155,9 @@ sub set
         my $cycle = $conf->{cycle};
         my $pivot = DateTime->from_epoch
             ( epoch => $conf->{pivot}, time_zone => $conf->{time_zone} );
-        my $delta = $begin->epoch - $pivot->epoch;
 
-        $pivot->add( days => $cycle * int( $delta / Cronos::DAY / $cycle ) )
-            if $delta > 0;
+        $pivot->add( days => int( ( $begin->epoch - $pivot->epoch )
+            / ( Cronos::DAY * $cycle ) ) * $cycle );
 
         $pivot->subtract( days => $cycle ) while $begin->epoch < $pivot->epoch;
 

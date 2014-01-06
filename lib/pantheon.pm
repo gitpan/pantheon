@@ -8,7 +8,7 @@ use warnings;
 pantheon - A suite of cluster administration tools and platforms
 
 =cut
-our $VERSION = '0.50';
+our $VERSION = '0.52';
 
 =head1 MODULES
 
@@ -83,7 +83,6 @@ A configuration management platform
  Pan::RCS
  Pan::Repo
  Pan::Transform
- Pan::Multicast
 
 =head3 Cronos
 
@@ -105,22 +104,25 @@ A data collection platform
 
 A suite of utility modules
 
+ Vulcan::Cruft
  Vulcan::Daemon
  Vulcan::DirConf
- Vulcan::OptConf
+ Vulcan::ExpSSH
+ Vulcan::File
+ Vulcan::Grep
  Vulcan::Logger
+ Vulcan::Manifest
+ Vulcan::Mrsync
+ Vulcan::Multicast
+ Vulcan::OptConf
  Vulcan::Phasic
  Vulcan::ProcLock
  Vulcan::SQLiteDB
- Vulcan::SysInfo
- Vulcan::Symlink
- Vulcan::Mrsync
- Vulcan::Cruft
- Vulcan::Grep
  Vulcan::Sort
  Vulcan::Sudo
- Vulcan::File
- Vulcan::Manifest
+ Vulcan::SysInfo
+ Vulcan::Symlink
+ Vulcan::Symlink::Conf
 
 =head1 AUTHOR
 
