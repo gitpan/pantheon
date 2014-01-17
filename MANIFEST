@@ -149,6 +149,7 @@ pantheon/tools/seco/decruft
 pantheon/tools/seco/hits
 pantheon/tools/seco/ntpsync
 pantheon/tools/seco/search
+pantheon/tools/seco/vips
 pantheon/tools/seco/whoismycluster
 pantheon/tools/symlink
 pantheon/tools/sysinfo

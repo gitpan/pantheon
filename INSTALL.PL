@@ -5,7 +5,16 @@ use FindBin qw( $Bin );
 use lib "$Bin/lib";
 use pantheon;
 
+my $env = "$Bin/.install";
+
+for my $env ( -f $env ? `cat $env` : () )
+{
+    $env =~ s/#.+//g; $env =~ s/^\s*//g; $env =~ s/\s*$//g;
+    $ENV{$1} = $2 if $env =~ /([^=]+?)\s*=\s*(.+)/;
+}
+
 exit 0 unless my $pantheon = $ENV{PANTHEON};
+die "no such path: $pantheon" unless -f $pantheon;
 
 my $root = "$pantheon/pantheon";
 my $config = "$root/tools/.config";
