@@ -30,5 +30,7 @@ return sub
             && ! chmod oct $conf->{chmod}, $path;
         return &$unlink( $path ) if @pw && ! chown @pw[2,3], $path;
     }
+
+    print "ok\n";
     return 0;
 };

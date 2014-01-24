@@ -29,4 +29,4 @@ requires:
   Thread::Queue: 2.12
   YAML::XS: 0.41
   threads: 1.8
-version: 0.54
+version: 0.56

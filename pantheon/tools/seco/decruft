@@ -24,11 +24,12 @@ my $cycle = $o{interval} || $CYCLE;
 
 do
 {
+    map { system "> $_" } map { glob "/var/spool/$_/*" } qw( mail mqueue );
     my $conf = eval { YAML::XS::LoadFile( $o{conf} ) } || die "$o{conf}: $@";
 
     while ( my ( $path, $conf ) = each %$conf )
     {
-        for my $path ( glob $path )
+        for my $path ( grep { $path =~ /\/$/ ? -d : -f } glob $path )
         {
             my ( $cruft, @cut ) = Vulcan::Cruft->new( $path );
 

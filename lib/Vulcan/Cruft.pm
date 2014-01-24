@@ -121,7 +121,10 @@ sub cut
     for my $file ( @$self )
     {
         next unless -f $file;
-        next unless my $cut = int( ( stat $file )[7] / $size );
+        my $cut = ( stat $file )[7] / $size;
+
+        next if $cut <= 1;
+        $cut = int $cut;
 
         my $keep = $param{count} || $cut;
         my ( $chunk, $i ) = ( $file.$time, 0 );
@@ -129,8 +132,7 @@ sub cut
         while ( $cut >= 0 )
         {
             my $skip = $count * $i ++;
-            my $of = $keep < $cut ? next : $chunk . $cut --;
-
+            my $of = $keep < $cut -- ? next : $chunk . ( $cut + 1 );
             last if system sprintf "$dd if=$file of=$of skip=$skip";
         }
 

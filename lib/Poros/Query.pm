@@ -21,6 +21,7 @@ use strict;
 use warnings;
 
 use Carp;
+use POSIX;
 use YAML::XS;
 use File::Spec;
 use File::Basename;
@@ -83,8 +84,9 @@ sub run
     if ( ! $< && $user && $user ne ( getpwuid $< )[0] )
     {
         die "invalid user $user\n" unless my @pw = getpwnam $user;
-        my @user = map { sprintf '%d', $_ } @pw[2,3];
-        ( $<, $>, $(, $) ) = ( @user[0,0,1], join ' ', @user[1,1] );
+        @pw = map { 0 + sprintf '%d', $_ } @pw[2,3];
+        POSIX::setgid( $pw[1] ); ## setgid must preceed setuid
+        POSIX::setuid( $pw[0] );
     }
 
     &$code( pdir => File::Basename::dirname( $RealBin ), %$query );

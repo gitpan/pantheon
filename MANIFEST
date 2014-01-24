@@ -136,6 +136,7 @@ pantheon/tools/janus/ctrl
 pantheon/tools/janus/run
 pantheon/tools/janus/stat
 pantheon/tools/janus/tail
+pantheon/tools/keys
 pantheon/tools/loop
 pantheon/tools/mcmd
 pantheon/tools/mrsync

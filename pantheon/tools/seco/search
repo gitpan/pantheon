@@ -25,8 +25,7 @@ use lib $seco{lib};
 use SECO::Conf::Auto;
 use SECO::Engine::Search;
 
-die "go fuck yourself!\n" unless -e
-    File::Spec->join( ( getpwuid $< )[7], 'ytt' );
+die "no ytt!\n" unless -e File::Spec->join( ( getpwuid $< )[7], 'ytt' );
 
 my %o = $option->get( qw( stop start restart load=s lock=s cache=s ) )->dump;
 my $conf = SECO::Conf::Auto->new( $seco{conf} );
@@ -35,13 +34,14 @@ my $info = $conf->search( $host );
 
 die "no seco config!" unless my ( $tier ) = @{ $info->{$host} };
 my $seco = SECO::Engine::Search->new();
-my %mode = ( mode => 'qrw' ) if $tier eq 'pw';
+my %mode = ( mode => 'qrw' ) if $tier =~ /pw$/;
 
 $seco->flag( lock => $o{lock} ) if $o{lock};
 $seco->stop( %mode ) if $o{stop} ||= $o{restart};
 
 if ( $o{start} ||= $o{restart} )
 {
+    $seco->purge();
     sleep 3 if $o{stop};
     $seco->start( %mode );
 }
