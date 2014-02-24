@@ -14,7 +14,7 @@ for my $env ( -f $env ? `cat $env` : () )
 }
 
 exit 0 unless my $pantheon = $ENV{PANTHEON};
-die "no such path: $pantheon" unless -f $pantheon;
+die "no such path: $pantheon" unless -d $pantheon;
 
 my $root = "$pantheon/pantheon";
 my $config = "$root/tools/.config";

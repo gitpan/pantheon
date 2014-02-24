@@ -60,6 +60,7 @@ lib/Vulcan/Daemon.pm
 lib/Vulcan/DirConf.pm
 lib/Vulcan/ExpSSH.pm
 lib/Vulcan/File.pm
+lib/Vulcan/Gflags.pm
 lib/Vulcan/Grep.pm
 lib/Vulcan/Logger.pm
 lib/Vulcan/Manifest.pm
@@ -147,9 +148,13 @@ pantheon/tools/poros/proxy
 pantheon/tools/range
 pantheon/tools/seco/check
 pantheon/tools/seco/decruft
+pantheon/tools/seco/deploy
+pantheon/tools/seco/getbuildtype
 pantheon/tools/seco/hits
 pantheon/tools/seco/ntpsync
 pantheon/tools/seco/search
+pantheon/tools/seco/searcherrun
+pantheon/tools/seco/service
 pantheon/tools/seco/vips
 pantheon/tools/seco/whoismycluster
 pantheon/tools/symlink

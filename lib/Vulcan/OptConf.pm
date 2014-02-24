@@ -37,7 +37,7 @@ our ( $ARGC, $THIS, $CONF, $ROOT, @CONF ) = ( 0, $RealScript, '.config' );
 
 =head3 load( $conf )
 
-Load options from a YAML file $conf, which when unspecified, defaults to
+Load options from a YAML file $conf, which if unspecified, defaults to
 $RealBin/.config, or $RealBin/../.config, if either exists. Returns object.
 
 =cut
@@ -109,9 +109,9 @@ sub set
     return $self;
 }
 
-=head3 get( @options )
+=head3 get( @option )
 
-Invoke Getopt::Long to get @options, if any specified. Returns object.
+Invoke Getopt::Long to get @option, if any specified. Returns object.
 
 Getopt::Long is configured through @CONF.
 
@@ -131,7 +131,7 @@ sub get
 
 =head3 assert( @option )
 
-print help and exit, when any of @option is not defined.
+print help and exit, if any of @option is not defined.
 
 =cut
 sub assert

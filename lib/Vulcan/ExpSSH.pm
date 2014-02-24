@@ -39,7 +39,7 @@ sub conn
     }
 
     my $exp = Expect->new();
-    my $ssh = "$SSH -t -l $conn{user} $host[$i]";
+    my $ssh = "$SSH -l $conn{user} $host[$i]";
     my $prompt = '::sudo::';
     my $pass = $conn{pass} || "\n"; $pass .= "\n" if $pass !~ /\n$/;
 

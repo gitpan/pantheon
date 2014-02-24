@@ -27,7 +27,9 @@ return sub
     {
         next unless my $user = $conf->{user};
         my $home = "/home/$user";
-        system( "mkdir -p $home && chown $user $home" ) if $conf->{passwd};
+        my $ssh = "$home/.ssh";
+        system( "mkdir -m 0700 -p $ssh && chown $user $ssh $home" )
+            if $conf->{passwd};
     }
 
     print "ok\n";

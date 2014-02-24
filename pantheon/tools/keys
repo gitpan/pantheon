@@ -44,7 +44,7 @@ for my $user ( @ARGV )
     }
 }
 
-exit 0 unless @conf;
+die "invalid user or user has no key\n" unless @conf;
 
 my %query = ( code => 'dump', argv => \@conf );
 my $range = Hermes->new( $option->dump( 'range' ) );

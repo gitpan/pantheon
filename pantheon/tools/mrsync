@@ -3,7 +3,7 @@
 =head1 SYNOPSIS
 
  $0 [--src src-range] --dst dst-range --sp src-path [--dp dst-path] \
-    [--timeout seconds] [--max number] [--retry number] [--nice number] 
+    [--timeout seconds] [--max number] [--Retry number] [--nice number] 
     [rsync options] 
 
 =cut
@@ -17,11 +17,14 @@ use Vulcan::OptConf;
 
 $| ++;
 
-@Vulcan::OptConf::CONF = qw( pass_through );
+@Vulcan::OptConf::CONF = qw( pass_through no_ignore_case );
 
 my $option = Vulcan::OptConf->load();
 my %o = $option->set( retry => 2, timeout => 300, src => hostname() )
-    ->get( qw( src=s dst=s sp=s dp=s timeout=i max=i retry=i nice=i ) )->dump();
+    ->get( qw( range=s src=s dst=s sp=s dp=s timeout=i max=i Retry=i nice=i ) )
+    ->dump();
+
+$o{dst} ||= $o{range};
 
 my $range = Hermes->new( $option->dump( 'range' ) );
 my $mrsync = Vulcan::Mrsync->new

@@ -1,5 +1,12 @@
 Revision history for pantheon.
 
+0.58    2014.02.24
+
+0.57    2014.01.24
+        Vulcan::Flags - new module
+        pantheon/tools/access - create .ssh
+        Vulcan::ExpSSH - remove -t
+
 0.56    2014.01.24
         Happy Lunar New Year, 2015!
 
